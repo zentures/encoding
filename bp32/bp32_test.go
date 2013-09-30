@@ -42,7 +42,7 @@ func runDecompression(data []uint32, codec encoding.Integer) []uint32 {
 	recovered := make([]uint32, len(data)*20)
 	rinpos := encoding.NewCursor()
 	routpos := encoding.NewCursor()
-	codec.Decompress(data, rinpos, len(data), recovered, routpos)
+	codec.Uncompress(data, rinpos, len(data), recovered, routpos)
 	recovered = recovered[:routpos.Get()]
 	return recovered
 }
