@@ -29,7 +29,7 @@ func generateDataInBytes(N int) *bytes.Buffer {
 	return bytes.NewBuffer(b)
 }
 
-func runLZWCompression(data *bytes.Buffer) *bytes.Buffer {
+func runLZWCompress(data *bytes.Buffer) *bytes.Buffer {
 	var compressed bytes.Buffer
 	w := lzw.NewWriter(&compressed, lzw.MSB, 8)
 	w.Write(data.Bytes())
@@ -37,7 +37,7 @@ func runLZWCompression(data *bytes.Buffer) *bytes.Buffer {
 	return &compressed
 }
 
-func runLZWUncompression(data *bytes.Buffer, length int) *bytes.Buffer {
+func runLZWDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 	recovered := make([]byte, length*4)
 	r := lzw.NewReader(data, lzw.MSB, 8)
 
@@ -50,7 +50,7 @@ func runLZWUncompression(data *bytes.Buffer, length int) *bytes.Buffer {
 	}
 
 	if total != len(recovered) {
-		fmt.Printf("encoding/runLZWUncompression: something is wrong. Read %d bytes, expecting %d bytes\n", total, len(recovered))
+		fmt.Printf("encoding/runLZWDecompress: something is wrong. Read %d bytes, expecting %d bytes\n", total, len(recovered))
 	}
 
 	return bytes.NewBuffer(recovered)
@@ -60,12 +60,12 @@ func TestLZW(t *testing.T) {
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
 		data := generateDataInBytes(k)
 
-		compressed := runLZWCompression(data)
+		compressed := runLZWCompress(data)
 		cl := compressed.Len()
 		fmt.Printf("encoding/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data.Bytes()), cl)
 
-		recovered := runLZWUncompression(compressed, k)
-		fmt.Printf("encoding/TestBasicExample: Uncompressed from %d bytes to %d bytes\n", cl, len(recovered.Bytes()))
+		recovered := runLZWDecompress(compressed, k)
+		fmt.Printf("encoding/TestBasicExample: Decompressed from %d bytes to %d bytes\n", cl, len(recovered.Bytes()))
 
 		if !reflect.DeepEqual(data, recovered) {
 			t.Fatalf("encoding/TestBasicExample: Problem recovering. Original length = %d, recovered length = %d\n", len(data.Bytes()), len(recovered.Bytes()))
@@ -77,25 +77,25 @@ func BenchmarkLZWCompress(b *testing.B) {
 	data := generateDataInBytes(b.N)
 
 	b.ResetTimer()
-	compressed := runLZWCompression(data)
+	compressed := runLZWCompress(data)
 	b.StopTimer()
 
 	fmt.Printf("encoding/BenchmarkLZWCompress: Compressed from %d bytes to %d bytes\n", data.Len(), compressed.Len())
 }
 
-func BenchmarkLZWUncompress(b *testing.B) {
+func BenchmarkLZWDecompress(b *testing.B) {
 	data := generateDataInBytes(b.N)
-	compressed := runLZWCompression(data)
+	compressed := runLZWCompress(data)
 	cl := compressed.Len()
 
 	b.ResetTimer()
-	recovered := runLZWUncompression(compressed, b.N)
+	recovered := runLZWDecompress(compressed, b.N)
 	b.StopTimer()
 
-	fmt.Printf("encoding/BenchmarkLZWUncompress: Uncompressed from %d bytes to %d bytes\n", cl, recovered.Len())
+	fmt.Printf("encoding/BenchmarkLZWDecompress: Decompressed from %d bytes to %d bytes\n", cl, recovered.Len())
 }
 
-func runGzipCompression(data *bytes.Buffer) *bytes.Buffer {
+func runGzipCompress(data *bytes.Buffer) *bytes.Buffer {
 	var compressed bytes.Buffer
 	w := gzip.NewWriter(&compressed)
 	w.Write(data.Bytes())
@@ -103,20 +103,20 @@ func runGzipCompression(data *bytes.Buffer) *bytes.Buffer {
 	return &compressed
 }
 
-func runGzipUncompression(data *bytes.Buffer, length int) *bytes.Buffer {
+func runGzipDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 	recovered := make([]byte, length*4)
-	r := lzw.NewReader(data)
+	r, _ := gzip.NewReader(data)
 
 	total := 0
-	n := 0
+	n := 100
 	var err error = nil
-	for err != io.EOF {
+	for err != io.EOF && n != 0 {
 		n, err = r.Read(recovered[total:])
 		total += n
 	}
 
 	if total != len(recovered) {
-		fmt.Printf("encoding/runGzipUncompression: something is wrong. Read %d bytes, expecting %d bytes\n", total, len(recovered))
+		fmt.Printf("encoding/runGzipDecompress: something is wrong. Read %d bytes, expecting %d bytes\n", total, len(recovered))
 	}
 
 	return bytes.NewBuffer(recovered)
@@ -126,12 +126,12 @@ func TestGzip(t *testing.T) {
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
 		data := generateDataInBytes(k)
 
-		compressed := runGzipCompression(data)
+		compressed := runGzipCompress(data)
 		cl := compressed.Len()
 		fmt.Printf("encoding/TestGzip: Compressed from %d bytes to %d bytes\n", len(data.Bytes()), cl)
 
-		recovered := runGzipUncompression(compressed, k)
-		fmt.Printf("encoding/TestGzip: Uncompressed from %d bytes to %d bytes\n", cl, len(recovered.Bytes()))
+		recovered := runGzipDecompress(compressed, k)
+		fmt.Printf("encoding/TestGzip: Decompressed from %d bytes to %d bytes\n", cl, len(recovered.Bytes()))
 
 		if !reflect.DeepEqual(data, recovered) {
 			t.Fatalf("encoding/TestGzip: Problem recovering. Original length = %d, recovered length = %d\n", len(data.Bytes()), len(recovered.Bytes()))
@@ -143,22 +143,22 @@ func BenchmarkGzipCompress(b *testing.B) {
 	data := generateDataInBytes(b.N)
 
 	b.ResetTimer()
-	compressed := runGzipCompression(data)
+	compressed := runGzipCompress(data)
 	b.StopTimer()
 
 	fmt.Printf("encoding/BenchmarkGzipCompress: Compressed from %d bytes to %d bytes\n", data.Len(), compressed.Len())
 }
 
-func BenchmarkGzipUncompress(b *testing.B) {
+func BenchmarkGzipDecompress(b *testing.B) {
 	data := generateDataInBytes(b.N)
-	compressed := runGzipCompression(data)
+	compressed := runGzipCompress(data)
 	cl := compressed.Len()
 
 	b.ResetTimer()
-	recovered := runGzipUncompression(compressed, b.N)
+	recovered := runGzipDecompress(compressed, b.N)
 	b.StopTimer()
 
-	fmt.Printf("encoding/BenchmarkGzipUncompress: Uncompressed from %d bytes to %d bytes\n", cl, recovered.Len())
+	fmt.Printf("encoding/BenchmarkGzipDecompress: Decompressed from %d bytes to %d bytes\n", cl, recovered.Len())
 }
 
 /*
@@ -211,7 +211,7 @@ func testCodec(t *testing.T, c encoding.Integer, data [][]uint32, max int) {
 		outpos.Set(1)
 		buffer[0] = backupdata[0]
 
-		c.Uncompress(dataout, inpos, thiscompsize - 1, buffer, outpos)
+		c.Decompress(dataout, inpos, thiscompsize - 1, buffer, outpos)
 
 		if outpos.Get() != len(data[k]) {
 			t.Fatalf("We have a bug (diff length): %d expected, got %d\n", len(data[k]), outpos.Get())

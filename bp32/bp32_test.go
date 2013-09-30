@@ -38,11 +38,11 @@ func runCompression(data []uint32, codec encoding.Integer) []uint32 {
 	return compressed
 }
 
-func runUncompression(data []uint32, codec encoding.Integer) []uint32 {
+func runDecompression(data []uint32, codec encoding.Integer) []uint32 {
 	recovered := make([]uint32, len(data)*20)
 	rinpos := encoding.NewCursor()
 	routpos := encoding.NewCursor()
-	codec.Uncompress(data, rinpos, len(data), recovered, routpos)
+	codec.Decompress(data, rinpos, len(data), recovered, routpos)
 	recovered = recovered[:routpos.Get()]
 	return recovered
 }
@@ -54,8 +54,8 @@ func TestBasicExample(t *testing.T) {
 		compressed := runCompression(data, codec)
 		fmt.Printf("bp32/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
 
-		recovered := runUncompression(compressed, codec)
-		fmt.Printf("bp32/TestBasicExample: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
+		recovered := runDecompression(compressed, codec)
+		fmt.Printf("bp32/TestBasicExample: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 
 		if !reflect.DeepEqual(data, recovered) {
 			t.Fatalf("bp32/TestBasicExample: Problem recovering. Original length = %d, recovered length = %d\n     data = %v\nrecovered = %v\n", len(data), len(recovered), data, recovered)
@@ -74,14 +74,14 @@ func BenchmarkCompress(b *testing.B) {
 	fmt.Printf("bp32/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
 }
 
-func BenchmarkUncompress(b *testing.B) {
+func BenchmarkDecompress(b *testing.B) {
 	N := encoding.CeilBy(uint32(b.N), 128)
 	data := generateData(int(N))
 	compressed := runCompression(data, codec)
 
 	b.ResetTimer()
-	recovered := runUncompression(compressed, codec)
+	recovered := runDecompression(compressed, codec)
 	b.StopTimer()
 
-	fmt.Printf("bp32/BenchmarkUncompress: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
+	fmt.Printf("bp32/BenchmarkDecompress: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 }
