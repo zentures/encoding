@@ -13,6 +13,14 @@ import (
 	"github.com/reducedb/encoding"
 )
 
+var (
+	codec encoding.Integer
+)
+
+func init() {
+	codec = NewIntegratedVariableByte()
+}
+
 func generateData(N int) []uint32 {
 	data := encoding.GenerateClustered(N, N*2)
 
@@ -40,8 +48,6 @@ func runUncompression(data []uint32, codec encoding.Integer) []uint32 {
 }
 
 func TestBasicExample(t *testing.T) {
-	codec := NewIntegratedVariableByte()
-
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
 		data := generateData(k)
 
