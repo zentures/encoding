@@ -32,15 +32,16 @@ func generateDataInBytes(N int) *bytes.Buffer {
 func runLZWCompress(data *bytes.Buffer) *bytes.Buffer {
 	var compressed bytes.Buffer
 	w := lzw.NewWriter(&compressed, lzw.MSB, 8)
+	defer w.Close()
 	w.Write(data.Bytes())
-	w.Close()
 	return &compressed
 }
 
 func runLZWDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 	recovered := make([]byte, length*4)
 	r := lzw.NewReader(data, lzw.MSB, 8)
-
+	defer r.Close()
+	
 	total := 0
 	n := 0
 	var err error = nil
@@ -98,14 +99,15 @@ func BenchmarkLZWDecompress(b *testing.B) {
 func runGzipCompress(data *bytes.Buffer) *bytes.Buffer {
 	var compressed bytes.Buffer
 	w := gzip.NewWriter(&compressed)
+	defer w.Close()
 	w.Write(data.Bytes())
-	w.Close()
 	return &compressed
 }
 
 func runGzipDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 	recovered := make([]byte, length*4)
 	r, _ := gzip.NewReader(data)
+	defer r.Close()
 
 	total := 0
 	n := 100
