@@ -47,13 +47,13 @@ func TestBasicExample(t *testing.T) {
 		fmt.Printf("bp32/TestBasicExample: Testing with %d integers\n", k)
 
 		compressed := runCompression(data, k, codec)
-		fmt.Printf("bp32/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
+		fmt.Printf("bp32/TestBasicExample: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
 
 		recovered := runDecompression(compressed, len(compressed), codec)
 		fmt.Printf("bp32/TestBasicExample: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 
-		if !reflect.DeepEqual(data, recovered) {
-			t.Fatalf("bp32/TestBasicExample: Problem recovering. Original length = %d, recovered length = %d\n     data = %v\nrecovered = %v\n", len(data), len(recovered), data, recovered)
+		if !reflect.DeepEqual(data[:k], recovered) {
+			t.Fatalf("bp32/TestBasicExample: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
 		}
 	}
 }
