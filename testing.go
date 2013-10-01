@@ -7,7 +7,6 @@
 package encoding
 
 import (
-	"reflect"
 	"testing"
 	"fmt"
 )
@@ -20,14 +19,16 @@ func TestCodec(codec Integer, data []uint32, sizes []int, t *testing.T) {
 
 		fmt.Printf("encoding/TestCodec: Testing with %d integers\n", k)
 
-		compressed := compress(codec, data, k)
+		compressed := Compress(codec, data, k)
 		fmt.Printf("encoding/TestCodec: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
 
-		recovered := uncompress(codec, compressed, k)
+		recovered := Uncompress(codec, compressed, k)
 		fmt.Printf("encoding/TestCodec: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 
-		if !reflect.DeepEqual(data[:k], recovered) {
-			t.Fatalf("encoding/TestCodec: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
+		for i := 0; i < k; i++ {
+			if data[i] != recovered[i] {
+				t.Fatalf("encoding/TestCodec: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
+			}
 		}
 	}
 }
@@ -36,7 +37,7 @@ func BenchmarkCompress(codec Integer, data []uint32, b *testing.B) {
 	k := int(CeilBy(uint32(b.N), 128))
 
 	b.ResetTimer()
-	compressed := compress(codec, data, k)
+	compressed := Compress(codec, data, k)
 	b.StopTimer()
 
 	fmt.Printf("encoding/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
@@ -44,16 +45,16 @@ func BenchmarkCompress(codec Integer, data []uint32, b *testing.B) {
 
 func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
 	k := int(CeilBy(uint32(b.N), 128))
-	compressed := compress(codec, data, k)
+	compressed := Compress(codec, data, k)
 
 	b.ResetTimer()
-	recovered := uncompress(codec, compressed, k)
+	recovered := Uncompress(codec, compressed, k)
 	b.StopTimer()
 
 	fmt.Printf("encoding/BenchmarkUncompress: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 }
 
-func compress(codec Integer, data []uint32, length int) []uint32 {
+func Compress(codec Integer, data []uint32, length int) []uint32 {
 	compressed := make([]uint32, length*2)
 	inpos := NewCursor()
 	outpos := NewCursor()
@@ -62,7 +63,7 @@ func compress(codec Integer, data []uint32, length int) []uint32 {
 	return compressed
 }
 
-func uncompress(codec Integer, data []uint32, length int) []uint32 {
+func Uncompress(codec Integer, data []uint32, length int) []uint32 {
 	recovered := make([]uint32, length)
 	rinpos := NewCursor()
 	routpos := NewCursor()
