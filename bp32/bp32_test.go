@@ -21,6 +21,7 @@ var (
 func init() {
 	codec = NewIntegratedBP32()
 	data = encoding.GenerateClustered(1000000000, 2000000000)
+	fmt.Printf("bp32_test/init: generated 1,000,000,000 integers for test")
 }
 
 func runCompression(data []uint32, length int, codec encoding.Integer) []uint32 {

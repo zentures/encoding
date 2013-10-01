@@ -15,46 +15,39 @@ import (
 
 var (
 	codec encoding.Integer
+	data []uint32
 )
 
 func init() {
 	codec = NewIntegratedVariableByte()
+	data = encoding.GenerateClustered(1000000000, 2000000000)
+	fmt.Printf("variablebyte_test/init: generated 1,000,000,000 integers for test")
 }
 
-func generateData(N int) []uint32 {
-	data := encoding.GenerateClustered(N, N*2)
-
-	fmt.Printf("variablebyte/generateData: len(data) = %d\n", len(data))
-
-	return data
-}
-
-func runCompression(data []uint32, codec encoding.Integer) []uint32 {
-	compressed := make([]uint32, len(data))
+func runCompression(data []uint32, length int, codec encoding.Integer) []uint32 {
+	compressed := make([]uint32, length)
 	inpos := encoding.NewCursor()
 	outpos := encoding.NewCursor()
-	codec.Compress(data, inpos, len(data), compressed, outpos)
+	codec.Compress(data, inpos, length, compressed, outpos)
 	compressed = compressed[:outpos.Get()]
 	return compressed
 }
 
-func runDecompression(data []uint32, codec encoding.Integer) []uint32 {
-	recovered := make([]uint32, len(data)*10)
+func runDecompression(data []uint32, length int, codec encoding.Integer) []uint32 {
+	recovered := make([]uint32, length*10)
 	rinpos := encoding.NewCursor()
 	routpos := encoding.NewCursor()
-	codec.Decompress(data, rinpos, len(data), recovered, routpos)
+	codec.Decompress(data, rinpos, length, recovered, routpos)
 	recovered = recovered[:routpos.Get()]
 	return recovered
 }
 
 func TestBasicExample(t *testing.T) {
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
-		data := generateData(k)
-
-		compressed := runCompression(data, codec)
+		compressed := runCompression(data, k, codec)
 		fmt.Printf("variablebyte/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
 
-		recovered := runDecompression(compressed, codec)
+		recovered := runDecompression(compressed, len(compressed), codec)
 		fmt.Printf("variablebyte/TestBasicExample: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 
 		if !reflect.DeepEqual(data, recovered) {
@@ -64,23 +57,18 @@ func TestBasicExample(t *testing.T) {
 }
 
 func BenchmarkCompress(b *testing.B) {
-	data := generateData(b.N)
-	codec := NewIntegratedVariableByte()
-
 	b.ResetTimer()
-	compressed := runCompression(data, codec)
+	compressed := runCompression(data, b.N, codec)
 	b.StopTimer()
 
-	fmt.Printf("variablebyte/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
+	fmt.Printf("variablebyte/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", b.N*4, len(compressed)*4)
 }
 
 func BenchmarkDecompress(b *testing.B) {
-	data := generateData(b.N)
-	codec := NewIntegratedVariableByte()
-	compressed := runCompression(data, codec)
+	compressed := runCompression(data, b.N, codec)
 
 	b.ResetTimer()
-	recovered := runDecompression(compressed, codec)
+	recovered := runDecompression(compressed, len(compressed), codec)
 	b.StopTimer()
 
 	fmt.Printf("variablebyte/BenchmarkDecompress: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
