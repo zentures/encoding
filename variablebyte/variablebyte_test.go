@@ -10,18 +10,21 @@ import (
 	"testing"
 	"reflect"
 	"fmt"
+	"log"
 	"github.com/reducedb/encoding"
 )
 
 var (
 	codec encoding.Integer
 	data []uint32
+	size int = 100000000
 )
 
 func init() {
 	codec = NewIntegratedVariableByte()
-	data = encoding.GenerateClustered(1000000000, 2000000000)
-	fmt.Printf("variablebyte_test/init: generated 1,000,000,000 integers for test")
+	log.Printf("variablebyte_test/init: generating %d uint32s\n", size)
+	data = encoding.GenerateClustered(size, size*2)
+	log.Printf("variablebyte_test/init: generated %d integers for test", size)
 }
 
 func runCompression(data []uint32, length int, codec encoding.Integer) []uint32 {
