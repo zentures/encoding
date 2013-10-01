@@ -15,46 +15,40 @@ import (
 
 var (
 	codec encoding.Integer
+	data []uint32
 )
 
 func init() {
 	codec = NewIntegratedBP32()
+	data = encoding.GenerateClustered(1000000000, 2000000000)
 }
 
-func generateData(N int) []uint32 {
-	data := encoding.GenerateClustered(N, N*2)
-
-	fmt.Printf("variablebyte/generateData: len(data) = %d\n", len(data))
-
-	return data
-}
-
-func runCompression(data []uint32, codec encoding.Integer) []uint32 {
-	compressed := make([]uint32, len(data)*2)
+func runCompression(data []uint32, length int, codec encoding.Integer) []uint32 {
+	compressed := make([]uint32, length*2)
 	inpos := encoding.NewCursor()
 	outpos := encoding.NewCursor()
-	codec.Compress(data, inpos, len(data), compressed, outpos)
+	codec.Compress(data, inpos, length, compressed, outpos)
 	compressed = compressed[:outpos.Get()]
 	return compressed
 }
 
-func runDecompression(data []uint32, codec encoding.Integer) []uint32 {
-	recovered := make([]uint32, len(data)*20)
+func runDecompression(data []uint32, length int, codec encoding.Integer) []uint32 {
+	recovered := make([]uint32, length*20)
 	rinpos := encoding.NewCursor()
 	routpos := encoding.NewCursor()
-	codec.Uncompress(data, rinpos, len(data), recovered, routpos)
+	codec.Uncompress(data, rinpos, length, recovered, routpos)
 	recovered = recovered[:routpos.Get()]
 	return recovered
 }
 
 func TestBasicExample(t *testing.T) {
 	for _, k := range []int{128, 128*10, 128*100, 128*1000, 128*10000} {
-		data := generateData(k)
+		//data := generateData(k)
 
-		compressed := runCompression(data, codec)
+		compressed := runCompression(data, k, codec)
 		fmt.Printf("bp32/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
 
-		recovered := runDecompression(compressed, codec)
+		recovered := runDecompression(compressed, len(compressed), codec)
 		fmt.Printf("bp32/TestBasicExample: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 
 		if !reflect.DeepEqual(data, recovered) {
@@ -64,23 +58,23 @@ func TestBasicExample(t *testing.T) {
 }
 
 func BenchmarkCompress(b *testing.B) {
-	N := encoding.CeilBy(uint32(b.N), 128)
-	data := generateData(int(N))
+	k := int(encoding.CeilBy(uint32(b.N), 128))
+	//data := generateData(int(N))
 
 	b.ResetTimer()
-	compressed := runCompression(data, codec)
+	compressed := runCompression(data, k, codec)
 	b.StopTimer()
 
-	fmt.Printf("bp32/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
+	fmt.Printf("bp32/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
 }
 
 func BenchmarkDecompress(b *testing.B) {
-	N := encoding.CeilBy(uint32(b.N), 128)
-	data := generateData(int(N))
-	compressed := runCompression(data, codec)
+	k := int(encoding.CeilBy(uint32(b.N), 128))
+	//data := generateData(int(N))
+	compressed := runCompression(data, k, codec)
 
 	b.ResetTimer()
-	recovered := runDecompression(compressed, codec)
+	recovered := runDecompression(compressed, len(compressed), codec)
 	b.StopTimer()
 
 	fmt.Printf("bp32/BenchmarkDecompress: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)

@@ -9,7 +9,9 @@ package encoding
 import (
 	"sort"
 	"errors"
+	"encoding/binary"
 	"math/rand"
+	"bytes"
 	"github.com/willf/bitset"
 )
 
@@ -17,6 +19,26 @@ const (
 	c1 int64 = 0xcc9e2d51
 	c2 int64 = 0x1b873593
 )
+
+func GenerateUniformInBytes(N, max int) *bytes.Buffer {
+	data := GenerateUniform(N, max)
+	b := make([]byte, N*4)
+	for i := 0; i < N; i++ {
+		binary.LittleEndian.PutUint32(b[i*4:], data[i])
+	}
+
+	return bytes.NewBuffer(b)
+}
+
+func GenerateClusteredInBytes(N, max int) *bytes.Buffer {
+	data := GenerateClustered(N, max)
+	b := make([]byte, N*4)
+	for i := 0; i < N; i++ {
+		binary.LittleEndian.PutUint32(b[i*4:], data[i])
+	}
+
+	return bytes.NewBuffer(b)
+}
 
 func GenerateUniform(N, max int) []uint32 {
 	if N*2 > max {
