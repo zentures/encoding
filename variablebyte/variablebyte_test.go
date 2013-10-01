@@ -34,10 +34,10 @@ func runCompression(data []uint32, length int, codec encoding.Integer) []uint32 
 }
 
 func runDecompression(data []uint32, length int, codec encoding.Integer) []uint32 {
-	recovered := make([]uint32, length*10)
+	recovered := make([]uint32, length)
 	rinpos := encoding.NewCursor()
 	routpos := encoding.NewCursor()
-	codec.Decompress(data, rinpos, length, recovered, routpos)
+	codec.Decompress(data, rinpos, len(data), recovered, routpos)
 	recovered = recovered[:routpos.Get()]
 	return recovered
 }
@@ -49,7 +49,7 @@ func TestBasicExample(t *testing.T) {
 		compressed := runCompression(data, k, codec)
 		fmt.Printf("variablebyte/TestBasicExample: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
 
-		recovered := runDecompression(compressed, len(compressed), codec)
+		recovered := runDecompression(compressed, k, codec)
 		fmt.Printf("variablebyte/TestBasicExample: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 
 		if !reflect.DeepEqual(data, recovered) {
