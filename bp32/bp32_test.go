@@ -17,6 +17,7 @@ import (
 var (
 	codec encoding.Integer
 	data []uint32
+	size int = 1000000000
 )
 
 func init() {
@@ -62,7 +63,6 @@ func TestBasicExample(t *testing.T) {
 
 func BenchmarkCompress(b *testing.B) {
 	k := int(encoding.CeilBy(uint32(b.N), 128))
-	//data := generateData(int(N))
 
 	b.ResetTimer()
 	compressed := runCompression(data, k, codec)
@@ -73,11 +73,10 @@ func BenchmarkCompress(b *testing.B) {
 
 func BenchmarkDecompress(b *testing.B) {
 	k := int(encoding.CeilBy(uint32(b.N), 128))
-	//data := generateData(int(N))
 	compressed := runCompression(data, k, codec)
 
 	b.ResetTimer()
-	recovered := runDecompression(compressed, len(compressed), codec)
+	recovered := runDecompression(compressed, k, codec)
 	b.StopTimer()
 
 	fmt.Printf("bp32/BenchmarkDecompress: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)

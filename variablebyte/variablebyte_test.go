@@ -73,7 +73,7 @@ func BenchmarkDecompress(b *testing.B) {
 	compressed := runCompression(data, b.N, codec)
 
 	b.ResetTimer()
-	recovered := runDecompression(compressed, len(compressed), codec)
+	recovered := runDecompression(compressed, b.N, codec)
 	b.StopTimer()
 
 	fmt.Printf("variablebyte/BenchmarkDecompress: Decompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
