@@ -44,6 +44,8 @@ func runDecompression(data []uint32, length int, codec encoding.Integer) []uint3
 
 func TestBasicExample(t *testing.T) {
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
+		fmt.Printf("variablebyte/TestBasicExample: Testing with %d integers\n", k)
+
 		compressed := runCompression(data, k, codec)
 		fmt.Printf("variablebyte/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data)*4, len(compressed)*4)
 
