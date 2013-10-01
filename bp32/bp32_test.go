@@ -10,6 +10,7 @@ import (
 	"testing"
 	"reflect"
 	"fmt"
+	"log"
 	"github.com/reducedb/encoding"
 )
 
