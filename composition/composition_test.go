@@ -17,7 +17,7 @@ import (
 var (
 	codec encoding.Integer
 	data []uint32
-	size int = 1000000
+	size int = 1000000000
 )
 
 func init() {
