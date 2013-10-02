@@ -8,7 +8,6 @@ package bp32
 
 import (
 	"errors"
-	"log"
 	"github.com/reducedb/encoding"
 )
 

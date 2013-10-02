@@ -22,10 +22,10 @@ import (
 )
 
 func TestEncoding(t *testing.T) {
-	//testEncodingWithFile("ts.txt.gz", t)
-	testEncodingWithFile("srcip.txt.gz", t)
+	testEncodingWithFile("ts.txt.gz", t)
+	//testEncodingWithFile("srcip.txt.gz", t)
 	//testEncodingWithFile("dstip.txt.gz", t)
-	//testEncodingWithFile("latency.txt.gz", t)
+	testEncodingWithFile("latency.txt.gz", t)
 }
 
 func testEncodingWithFile(path string, t *testing.T) {

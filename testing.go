@@ -97,7 +97,7 @@ func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
 }
 
 func Compress(codec Integer, data []uint32, length int) []uint32 {
-	compressed := make([]uint32, length)
+	compressed := make([]uint32, length*2)
 	inpos := NewCursor()
 	outpos := NewCursor()
 	codec.Compress(data, inpos, length, compressed, outpos)
