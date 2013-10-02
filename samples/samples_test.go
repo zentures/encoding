@@ -21,18 +21,25 @@ import (
 	"github.com/reducedb/encoding/variablebyte"
 )
 
-func TestTimestampEncoding(t *testing.T) {
-	data, err := readFileOfIntegers("ts.txt.gz")
+func TestEncoding(t *testing.T) {
+	testEncodingWithFile("ts.txt.gz", t)
+	testEncodingWithFile("srcip.txt.gz", t)
+	testEncodingWithFile("dstip.txt.gz", t)
+	testEncodingWithFile("latency.txt.gz", t)
+}
+
+func testEncodingWithFile(path string, t *testing.T) {
+	data, err := readFileOfIntegers(path)
 	if err == nil {
-		log.Printf("encoding/TestTimeStampEncoding: Read %d integers (%d bytes) from ts.txt.gz.", len(data), len(data)*4)
+		log.Printf("encoding/TestEncoding: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, path)
 	} else {
-		log.Printf("encoding/TestTimeStampEncoding: Error opening ts.txt.gz: %v\n", err)
+		log.Printf("encoding/TestEncoding: Error opening ts.txt.gz: %v\n", err)
 	}
 
-	log.Printf("encoding/TestTimestampEncoding: Testing comprssion BP32+VariableByte\n")
+	log.Printf("encoding/TestEncoding: Testing comprssion BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewIntegratedComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/TestTimestampEncoding: Testing comprssion VariableByte\n")
+	log.Printf("encoding/TestEncoding: Testing comprssion VariableByte\n")
 	encoding.TestCodec(variablebyte.NewIntegratedVariableByte(), data, []int{len(data)}, t)
 
 	b := make([]byte, len(data)*4)
