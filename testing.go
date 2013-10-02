@@ -115,7 +115,7 @@ func Uncompress(codec Integer, data []uint32, length int) []uint32 {
 }
 
 func TestGzip(data []byte, t *testing.T) {
-	log.Printf("encoding/testTimestampGzip: Testing comprssion Gzip\n")
+	log.Printf("encoding/TestGzip: Testing comprssion Gzip\n")
 
 	var compressed bytes.Buffer
 	w := gzip.NewWriter(&compressed)
@@ -124,7 +124,7 @@ func TestGzip(data []byte, t *testing.T) {
 	w.Write(data)
 
 	cl := compressed.Len()
-	log.Printf("encoding/testTimestampGzip: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+	log.Printf("encoding/TestGzip: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
 
 	recovered := make([]byte, len(data))
 	r, _ := gzip.NewReader(&compressed)
@@ -137,11 +137,11 @@ func TestGzip(data []byte, t *testing.T) {
 		n, err = r.Read(recovered[total:])
 		total += n
 	}
-	log.Printf("encoding/testTimestampGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+	log.Printf("encoding/TestGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
 }
 
 func TestLZW(data []byte, t *testing.T) {
-	log.Printf("encoding/testTimestampLZW: Testing comprssion LZW\n")
+	log.Printf("encoding/TestLZW: Testing comprssion LZW\n")
 
 	var compressed bytes.Buffer
 	w := lzw.NewWriter(&compressed, lzw.MSB, 8)
@@ -150,7 +150,7 @@ func TestLZW(data []byte, t *testing.T) {
 	w.Write(data)
 
 	cl := compressed.Len()
-	log.Printf("encoding/testTimestampLZW: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+	log.Printf("encoding/TestLZW: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
 
 	recovered := make([]byte, len(data))
 	r := lzw.NewReader(&compressed, lzw.MSB, 8)
@@ -163,5 +163,5 @@ func TestLZW(data []byte, t *testing.T) {
 		n, err = r.Read(recovered[total:])
 		total += n
 	}
-	log.Printf("encoding/testTimestampLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+	log.Printf("encoding/TestLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
 }
