@@ -8,7 +8,14 @@ package encoding
 
 import (
 	"testing"
-	"fmt"
+	"os"
+	"io"
+	"bytes"
+	"log"
+	"time"
+	"compress/gzip"
+	"compress/lzw"
+	"runtime/pprof"
 )
 
 func TestCodec(codec Integer, data []uint32, sizes []int, t *testing.T) {
@@ -17,18 +24,53 @@ func TestCodec(codec Integer, data []uint32, sizes []int, t *testing.T) {
 			continue
 		}
 
-		fmt.Printf("encoding/TestCodec: Testing with %d integers\n", k)
+		log.Printf("encoding/TestCodec: Testing with %d integers\n", k)
 
+		now := time.Now()
 		compressed := Compress(codec, data, k)
-		fmt.Printf("encoding/TestCodec: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
+		log.Printf("encoding/TestCodec: Compressed %d integers from %d bytes to %d bytes in %d ns\n", k, k*4, len(compressed)*4, time.Since(now).Nanoseconds())
 
 		recovered := Uncompress(codec, compressed, k)
-		fmt.Printf("encoding/TestCodec: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
+		log.Printf("encoding/TestCodec: Uncompressed from %d bytes to %d bytes in %d ns\n", len(compressed)*4, len(recovered)*4, time.Since(now).Nanoseconds())
 
 		for i := 0; i < k; i++ {
 			if data[i] != recovered[i] {
 				t.Fatalf("encoding/TestCodec: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
 			}
+		}
+	}
+}
+
+func TestCodecPprof(codec Integer, data []uint32, sizes []int, t *testing.T) {
+	f, e := os.Create("cpu.compress.prof")
+	if e != nil {
+		log.Fatal(e)
+	}
+	defer f.Close()
+
+	now := time.Now()
+	pprof.StartCPUProfile(f)
+	compressed := Compress(codec, data, len(data))
+	pprof.StopCPUProfile()
+
+	log.Printf("encoding/testTimestampIntegerCodec: Compressed %d integers from %d bytes to %d bytes in %d ns\n", len(data), len(data)*4, len(compressed)*4, time.Since(now).Nanoseconds())
+
+	f2, e2 := os.Create("cpu.uncompress.prof")
+	if e2 != nil {
+		log.Fatal(e2)
+	}
+	defer f2.Close()
+
+	log.Printf("encoding/testTimestampIntegerCodec: Testing decompression\n")
+	now = time.Now()
+	pprof.StartCPUProfile(f2)
+	recovered := Uncompress(codec, compressed, len(data))
+	pprof.StopCPUProfile()
+	log.Printf("encoding/TestCodecPprof: Uncompressed from %d bytes to %d bytes in %d ns\n", len(compressed)*4, len(recovered)*4, time.Since(now).Nanoseconds())
+
+	for i := 0; i < len(data); i++ {
+		if data[i] != recovered[i] {
+			t.Fatalf("encoding/TestCodecPprof: Problem recovering. Original length = %d, recovered length = %d\n", len(data), len(recovered))
 		}
 	}
 }
@@ -40,7 +82,7 @@ func BenchmarkCompress(codec Integer, data []uint32, b *testing.B) {
 	compressed := Compress(codec, data, k)
 	b.StopTimer()
 
-	fmt.Printf("encoding/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
+	log.Printf("encoding/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
 }
 
 func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
@@ -51,11 +93,11 @@ func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
 	recovered := Uncompress(codec, compressed, k)
 	b.StopTimer()
 
-	fmt.Printf("encoding/BenchmarkUncompress: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
+	log.Printf("encoding/BenchmarkUncompress: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 }
 
 func Compress(codec Integer, data []uint32, length int) []uint32 {
-	compressed := make([]uint32, length*2)
+	compressed := make([]uint32, length)
 	inpos := NewCursor()
 	outpos := NewCursor()
 	codec.Compress(data, inpos, length, compressed, outpos)
@@ -72,3 +114,54 @@ func Uncompress(codec Integer, data []uint32, length int) []uint32 {
 	return recovered
 }
 
+func TestGzip(data []byte, t *testing.T) {
+	log.Printf("encoding/testTimestampGzip: Testing comprssion Gzip\n")
+
+	var compressed bytes.Buffer
+	w := gzip.NewWriter(&compressed)
+	defer w.Close()
+	now := time.Now()
+	w.Write(data)
+
+	cl := compressed.Len()
+	log.Printf("encoding/testTimestampGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+
+	recovered := make([]byte, len(data))
+	r, _ := gzip.NewReader(&compressed)
+	defer r.Close()
+
+	total := 0
+	n := 100
+	var err error = nil
+	for err != io.EOF && n != 0 {
+		n, err = r.Read(recovered[total:])
+		total += n
+	}
+	log.Printf("encoding/testTimestampGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+}
+
+func TestLZW(data []byte, t *testing.T) {
+	log.Printf("encoding/testTimestampLZW: Testing comprssion LZW\n")
+
+	var compressed bytes.Buffer
+	w := lzw.NewWriter(&compressed, lzw.MSB, 8)
+	defer w.Close()
+	now := time.Now()
+	w.Write(data)
+
+	cl := compressed.Len()
+	log.Printf("encoding/testTimestampLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+
+	recovered := make([]byte, len(data))
+	r := lzw.NewReader(&compressed, lzw.MSB, 8)
+	defer r.Close()
+
+	total := 0
+	n := 100
+	var err error = nil
+	for err != io.EOF && n != 0 {
+		n, err = r.Read(recovered[total:])
+		total += n
+	}
+	log.Printf("encoding/testTimestampLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+}

@@ -7,7 +7,6 @@
 package composition
 
 import (
-	"fmt"
 	"errors"
 	"github.com/reducedb/encoding"
 )
@@ -37,11 +36,11 @@ func (this *IntegratedComposition) Compress(in []uint32, inpos *encoding.Cursor,
 		out[0] = 0
 		outpos.Increment()
 	}
-	fmt.Printf("composition/Compress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//fmt.Printf("composition/Compress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	inlength -= inpos.Get() - init
 	this.f2.Compress(in, inpos, inlength, out, outpos)
-	fmt.Printf("composition/Compress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//fmt.Printf("composition/Compress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	return nil
 }
@@ -53,10 +52,10 @@ func (this *IntegratedComposition) Uncompress(in []uint32, inpos *encoding.Curso
 
 	init := inpos.Get()
 	this.f1.Uncompress(in, inpos, inlength, out, outpos)
-	fmt.Printf("composition/Uncompress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//fmt.Printf("composition/Uncompress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 	inlength -= inpos.Get() - init
 	this.f2.Uncompress(in, inpos, inlength, out, outpos)
-	fmt.Printf("composition/Uncompress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//fmt.Printf("composition/Uncompress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	return nil
 }

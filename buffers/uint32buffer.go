@@ -210,15 +210,15 @@ func (this *Uint32Buffer) GetAt(index int) (uint32, error) {
 // current position of this buffer and at the given offset in the array. The position of this buffer
 // is then incremented by length.
 func (this *Uint32Buffer) GetUint32s(dst []uint32, offset, length int) error {
-	fmt.Printf("uint32buffer/GetUint32s: length = %d, remaining = %d, offset = %d\n", length, this.Remaining(), offset)
+	//fmt.Printf("uint32buffer/GetUint32s: length = %d, remaining = %d, offset = %d\n", length, this.Remaining(), offset)
 
 	if offset < 0 || offset > cap(dst) {
 		return errors.New("Uint32Buffer/GetUint32s: Offset must be non-negative and no larger than length of dst")
 	}
 
 	if length < 0 || length > cap(dst) - offset {
-		fmt.Printf("Uint32Buffer/GetUint32s: cap(dst)-offset = %d\n", cap(dst) - offset)
-		fmt.Printf("Uint32Buffer/GetUint32s: buf = %v\n", this.buf)
+		//fmt.Printf("Uint32Buffer/GetUint32s: cap(dst)-offset = %d\n", cap(dst) - offset)
+		//fmt.Printf("Uint32Buffer/GetUint32s: buf = %v\n", this.buf)
 		return errors.New("Uint32Buffer/GetUint32s: Length must be non-negative and no larger than length of dst - offset ")
 	}
 
