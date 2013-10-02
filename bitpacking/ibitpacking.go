@@ -4,7 +4,7 @@
  *
  */
 
-package encoding
+package bitpacking
 
 import (
 	"errors"

@@ -12,90 +12,87 @@ import (
 	"github.com/reducedb/encoding/buffers"
 )
 
-type IntegratedVariableByte struct {
+type VariableByte struct {
 
 }
 
-var _ encoding.Integer = (*IntegratedVariableByte)(nil)
+var _ encoding.Integer = (*VariableByte)(nil)
 
-func NewIntegratedVariableByte() encoding.Integer {
-	return &IntegratedVariableByte{}
+func NewVariableByte() encoding.Integer {
+	return &VariableByte{}
 }
 
-func (this *IntegratedVariableByte) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *VariableByte) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
-		return errors.New("variablebyte/Compress: inlength = 0. No work done.")
+		return errors.New("VariableByte/Compress: inlength = 0. No work done.")
 	}
 
-	//fmt.Printf("variablebyte/Compress: after inlength = %d\n", inlength)
+	//fmt.Printf("VariableByte/Compress: after inlength = %d\n", inlength)
 
 	buf := buffers.NewByteBuffer(inlength*8)
-	initoffset := uint32(0)
 
 	for k := inpos.Get(); k < inpos.Get() + inlength; k++ {
-		val := in[k] - initoffset
-		//fmt.Printf("variablebyte/Compress: val = %d, initoffset = %d\n", val, initoffset)
-		initoffset = in[k]
+		//fmt.Printf("VariableByte/Compress: val = %d, initoffset = %d\n", val, initoffset)
+		val := in[k]
 
 		// This section emulates a do..while loop
 		b := val & 127
-		//fmt.Printf("variablebyte/Compress: before val = %d, b = %d\n", val, b)
+		//fmt.Printf("VariableByte/Compress: before val = %d, b = %d\n", val, b)
 		val = val>>7
 
 		if val != 0 {
 			b |= 128
 		}
-		//fmt.Printf("variablebyte/Compress: after val = %d, b = %d\n", val, b)
+		//fmt.Printf("VariableByte/Compress: after val = %d, b = %d\n", val, b)
 
 		buf.Put(byte(b))
 
 		for val != 0 {
 			b = val & 127
-			//fmt.Printf("variablebyte/Compress: before val = %d, b = %d\n", val, b)
+			//fmt.Printf("VariableByte/Compress: before val = %d, b = %d\n", val, b)
 			val = val>>7
 
 			if val != 0 {
 				b |= 128
 			}
-			//fmt.Printf("variablebyte/Compress: after val = %d, b = %d\n", val, b)
+			//fmt.Printf("VariableByte/Compress: after val = %d, b = %d\n", val, b)
 
 			buf.Put(byte(b))
 		}
 	}
 
 	for buf.Position()%4 != 0 {
-		//fmt.Printf("variablebyte/Compress: putting 128\n")
+		//fmt.Printf("VariableByte/Compress: putting 128\n")
 		buf.Put(128)
 	}
 
 	length := buf.Position()
 	buf.Flip()
 	ibuf := buf.AsUint32Buffer()
-	//fmt.Printf("variablebyte/Compress: l = %d, outpos = %d, ibuf = %v, buf = %v\n", length/4, outpos.Get(), ibuf, buf)
+	//fmt.Printf("VariableByte/Compress: l = %d, outpos = %d, ibuf = %v, buf = %v\n", length/4, outpos.Get(), ibuf, buf)
 	err := ibuf.GetUint32s(out, outpos.Get(), length/4)
 	if err != nil {
-		//fmt.Printf("variablebyte/Compress: error with GetUint32s - %v\n", err)
+		//fmt.Printf("VariableByte/Compress: error with GetUint32s - %v\n", err)
 		return err
 	}
 	outpos.Add(length/4)
 	inpos.Add(inlength)
-	//fmt.Printf("variablebyte/Compress: out = %v\n", out)
+	//fmt.Printf("VariableByte/Compress: out = %v\n", out)
 
 	return nil
 }
 
-func (this *IntegratedVariableByte) Uncompress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *VariableByte) Uncompress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
-		return errors.New("variablebyte/Uncompress: inlength = 0. No work done.")
+		return errors.New("VariableByte/Uncompress: inlength = 0. No work done.")
 	}
 
-	//fmt.Printf("variablebyte/Uncompress: after inlength = %d\n", inlength)
+	//fmt.Printf("VariableByte/Uncompress: after inlength = %d\n", inlength)
 
 	s := 0
 	p := inpos.Get()
 	finalp := inpos.Get() + inlength
 	tmpoutpos := outpos.Get()
-	initoffset := uint32(0)
 	v := uint32(0)
 	shift := uint(0)
 
@@ -110,8 +107,8 @@ func (this *IntegratedVariableByte) Uncompress(in []uint32, inpos *encoding.Curs
 
 		v += ((c & 127)<<shift)
 		if c & 128 == 0 {
-			out[tmpoutpos] = v + initoffset
-			initoffset = out[tmpoutpos]
+			out[tmpoutpos] = v
+			v = 0
 			tmpoutpos += 1
 			v = 0
 			shift = 0

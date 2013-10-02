@@ -13,27 +13,25 @@ import (
 )
 
 var (
-	codec encoding.Integer
 	data []uint32
 	size int = 1000000000
 )
 
 func init() {
-	codec = NewIntegratedBP32()
 	log.Printf("bp32/init: generating %d uint32s\n", size)
 	data = encoding.GenerateClustered(size, size*2)
 	log.Printf("bp32/init: generated %d integers for test", size)
 }
 
-func TestCodec(t *testing.T) {
+func TestBP32(t *testing.T) {
 	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
-	encoding.TestCodec(codec, data, sizes, t)
+	encoding.TestCodec(NewBP32(), data, sizes, t)
 }
 
-func BenchmarkCompress(b *testing.B) {
-	encoding.BenchmarkCompress(codec, data, b)
+func BenchmarkBP32Compress(b *testing.B) {
+	encoding.BenchmarkCompress(NewBP32(), data, b)
 }
 
-func BenchmarkUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(codec, data, b)
+func BenchmarkBP32Uncompress(b *testing.B) {
+	encoding.BenchmarkUncompress(NewBP32(), data, b)
 }

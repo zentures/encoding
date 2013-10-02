@@ -13,27 +13,25 @@ import (
 )
 
 var (
-	codec encoding.Integer
 	data []uint32
 	size int = 1000000000
 )
 
 func init() {
-	codec = NewIntegratedVariableByte()
 	log.Printf("variablebyte_test/init: generating %d uint32s\n", size)
 	data = encoding.GenerateClustered(size, size*2)
 	log.Printf("variablebyte_test/init: generated %d integers for test", size)
 }
 
-func TestCodec(t *testing.T) {
+func TestVariableByte(t *testing.T) {
 	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
-	encoding.TestCodec(codec, data, sizes, t)
+	encoding.TestCodec(NewVariableByte(), data, sizes, t)
 }
 
-func BenchmarkCompress(b *testing.B) {
-	encoding.BenchmarkCompress(codec, data, b)
+func BenchmarkVariableByteCompress(b *testing.B) {
+	encoding.BenchmarkCompress(NewVariableByte(), data, b)
 }
 
-func BenchmarkUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(codec, data, b)
+func BenchmarkVariableByteUncompress(b *testing.B) {
+	encoding.BenchmarkUncompress(NewVariableByte(), data, b)
 }
