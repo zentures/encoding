@@ -124,7 +124,7 @@ func TestGzip(data []byte, t *testing.T) {
 	w.Write(data)
 
 	cl := compressed.Len()
-	log.Printf("encoding/testTimestampGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+	log.Printf("encoding/testTimestampGzip: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
 
 	recovered := make([]byte, len(data))
 	r, _ := gzip.NewReader(&compressed)
@@ -150,7 +150,7 @@ func TestLZW(data []byte, t *testing.T) {
 	w.Write(data)
 
 	cl := compressed.Len()
-	log.Printf("encoding/testTimestampLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+	log.Printf("encoding/testTimestampLZW: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
 
 	recovered := make([]byte, len(data))
 	r := lzw.NewReader(&compressed, lzw.MSB, 8)
