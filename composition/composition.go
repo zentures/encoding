@@ -11,21 +11,21 @@ import (
 	"github.com/reducedb/encoding"
 )
 
-type IntegratedComposition struct {
+type Composition struct {
 	f1 encoding.Integer
 	f2 encoding.Integer
 }
 
-var _ encoding.Integer = (*IntegratedComposition)(nil)
+var _ encoding.Integer = (*Composition)(nil)
 
-func NewIntegratedComposition(f1 encoding.Integer, f2 encoding.Integer) encoding.Integer {
-	return &IntegratedComposition{
+func NewComposition(f1 encoding.Integer, f2 encoding.Integer) encoding.Integer {
+	return &Composition{
 		f1: f1,
 		f2: f2,
 	}
 }
 
-func (this *IntegratedComposition) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *Composition) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
 		return errors.New("composition/Compress: inlength = 0. No work done.")
 	}
@@ -45,7 +45,7 @@ func (this *IntegratedComposition) Compress(in []uint32, inpos *encoding.Cursor,
 	return nil
 }
 
-func (this *IntegratedComposition) Uncompress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *Composition) Uncompress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
 		return errors.New("composition/Uncompress: inlength = 0. No work done.")
 	}

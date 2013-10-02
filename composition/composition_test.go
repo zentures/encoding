@@ -17,25 +17,37 @@ import (
 var (
 	codec encoding.Integer
 	data []uint32
-	size int = 1000000000
+	size int = 1000000
 )
 
 func init() {
-	codec = NewIntegratedComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte())
 	log.Printf("composition_test/init: generating %d uint32s\n", size)
 	data = encoding.GenerateClustered(size, size*2)
 	log.Printf("composition_test/init: generated %d integers for test", size)
 }
 
-func TestCodec(t *testing.T) {
+func TestIntegratedBP32andIntegratedVariableByte(t *testing.T) {
 	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
-	encoding.TestCodec(codec, data, sizes, t)
+	encoding.TestCodec(NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, sizes, t)
 }
 
-func BenchmarkCompress(b *testing.B) {
-	encoding.BenchmarkCompress(codec, data, b)
+func TestBP32andVariableByte(t *testing.T) {
+	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
+	encoding.TestCodec(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, sizes, t)
 }
 
-func BenchmarkUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(codec, data, b)
+func BenchmarkIntegratedBP32andIntegratedVariableByteCompress(b *testing.B) {
+	encoding.BenchmarkCompress(NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, b)
+}
+
+func BenchmarkIntegratedBP32andIntegratedVariableByteUncompress(b *testing.B) {
+	encoding.BenchmarkUncompress(NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, b)
+}
+
+func BenchmarkBP32andVariableByteCompress(b *testing.B) {
+	encoding.BenchmarkCompress(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, b)
+}
+
+func BenchmarkBP32andVariableByteUncompress(b *testing.B) {
+	encoding.BenchmarkUncompress(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, b)
 }
