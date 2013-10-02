@@ -8,6 +8,7 @@ package bp32
 
 import (
 	"errors"
+	"log"
 	"github.com/reducedb/encoding"
 )
 
@@ -27,7 +28,7 @@ func NewIntegratedBP32() encoding.Integer {
 }
 
 func (this *IntegratedBP32) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
-	//fmt.Printf("bp32/Compress: before inlength = %d\n", inlength)
+	//log.Printf("bp32/Compress: before inlength = %d\n", inlength)
 
 	inlength = int(encoding.FloorBy(uint32(inlength), DefaultBlockSize))
 
@@ -35,7 +36,7 @@ func (this *IntegratedBP32) Compress(in []uint32, inpos *encoding.Cursor, inleng
 		return errors.New("BP32/Compress: block size less than 128. No work done.")
 	}
 
-	//fmt.Printf("bp32/Compress: after inlength = %d\n", inlength)
+	//log.Printf("bp32/Compress: after inlength = %d, len(in) = %d\n", inlength, len(in))
 
 	out[outpos.Get()] = uint32(inlength)
 	outpos.Increment()
@@ -51,11 +52,13 @@ func (this *IntegratedBP32) Compress(in []uint32, inpos *encoding.Cursor, inleng
 		mbits3 := encoding.MaxDiffBits(initoffset3, in, s + 2*32, 32)
 		initoffset4 := in[s + 2*32 + 31]
 		mbits4 := encoding.MaxDiffBits(initoffset4, in, s + 3*32, 32)
+		
+		//log.Printf("bp32/Compress: tmpoutpos = %d, s = %d\n", tmpoutpos, s)
 
 		out[tmpoutpos] = (mbits1<<24) | (mbits2<<16) | (mbits3<<8) | mbits4
 		tmpoutpos += 1
 
-		//fmt.Printf("bp32/Compress: mbits1 = %d, mbits2 = %d, mbits3 = %d, mbits4 = %d, s = %d\n", mbits1, mbits2, mbits3, mbits4, out[tmpoutpos-1])
+		//log.Printf("bp32/Compress: mbits1 = %d, mbits2 = %d, mbits3 = %d, mbits4 = %d, s = %d\n", mbits1, mbits2, mbits3, mbits4, out[tmpoutpos-1])
 
 		encoding.IntegratedPack(initoffset, in, s, out, tmpoutpos, int(mbits1))
 		//encoding.PrintUint32sInBits(in, s, 32)
@@ -97,35 +100,35 @@ func (this *IntegratedBP32) Uncompress(in []uint32, inpos *encoding.Cursor, inle
 	tmpinpos := inpos.Get()
 	initoffset := uint32(0)
 
-	//fmt.Printf("bp32/Uncompress: outlength = %d, inpos = %d, outpos = %d\n", outlength, inpos.Get(), outpos.Get())
+	//log.Printf("bp32/Uncompress: outlength = %d, inpos = %d, outpos = %d\n", outlength, inpos.Get(), outpos.Get())
 	for s := outpos.Get(); s < outpos.Get() + int(outlength); s += 32*4 {
 		mbits1 := in[tmpinpos]>>24
 		mbits2 := (in[tmpinpos]>>16) & 0xFF
 		mbits3 := (in[tmpinpos]>>8) & 0xFF
 		mbits4 := (in[tmpinpos]) & 0xFF
 
-		//fmt.Printf("bp32/Uncopmress: mbits1 = %d, mbits2 = %d, mbits3 = %d, mbits4 = %d, s = %d\n", mbits1, mbits2, mbits3, mbits4, s)
+		//log.Printf("bp32/Uncopmress: mbits1 = %d, mbits2 = %d, mbits3 = %d, mbits4 = %d, s = %d\n", mbits1, mbits2, mbits3, mbits4, s)
 		tmpinpos += 1
 
 		encoding.IntegratedUnpack(initoffset, in, tmpinpos, out, s, int(mbits1))
 		tmpinpos += int(mbits1)
 		initoffset = out[s + 31]
-		//fmt.Printf("bp32/Uncompress: out = %v\n", out)
+		//log.Printf("bp32/Uncompress: out = %v\n", out)
 
 		encoding.IntegratedUnpack(initoffset, in, tmpinpos, out, s + 32, int(mbits2))
 		tmpinpos += int(mbits2)
 		initoffset = out[s + 32 + 31]
-		//fmt.Printf("bp32/Uncompress: out = %v\n", out)
+		//log.Printf("bp32/Uncompress: out = %v\n", out)
 
 		encoding.IntegratedUnpack(initoffset, in, tmpinpos, out, s + 2*32, int(mbits3))
 		tmpinpos += int(mbits3)
 		initoffset = out[s + 2*32 + 31]
-		//fmt.Printf("bp32/Uncompress: out = %v\n", out)
+		//log.Printf("bp32/Uncompress: out = %v\n", out)
 
 		encoding.IntegratedUnpack(initoffset, in, tmpinpos, out, s + 3*32, int(mbits4))
 		tmpinpos += int(mbits4)
 		initoffset = out[s + 3*32 + 31]
-		//fmt.Printf("bp32/Uncompress: out = %v\n", out)
+		//log.Printf("bp32/Uncompress: out = %v\n", out)
 	}
 
 	outpos.Add(int(outlength))
