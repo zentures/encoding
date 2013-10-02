@@ -31,16 +31,22 @@ func TestEncoding(t *testing.T) {
 func testEncodingWithFile(path string, t *testing.T) {
 	data, err := readFileOfIntegers(path)
 	if err == nil {
-		log.Printf("encoding/TestEncoding: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, path)
+		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, path)
 	} else {
-		log.Printf("encoding/TestEncoding: Error opening ts.txt.gz: %v\n", err)
+		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
 	}
 
-	log.Printf("encoding/TestEncoding: Testing comprssion BP32+VariableByte\n")
-	encoding.TestCodec(composition.NewIntegratedComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, []int{len(data)}, t)
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion Integrated BP32+VariableByte\n")
+	encoding.TestCodec(composition.NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/TestEncoding: Testing comprssion VariableByte\n")
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion Integrated VariableByte\n")
 	encoding.TestCodec(variablebyte.NewIntegratedVariableByte(), data, []int{len(data)}, t)
+
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion BP32+VariableByte\n")
+	encoding.TestCodec(composition.NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, []int{len(data)}, t)
+
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion VariableByte\n")
+	encoding.TestCodec(variablebyte.NewVariableByte(), data, []int{len(data)}, t)
 
 	b := make([]byte, len(data)*4)
 	for i := 0; i < len(data); i++ {
