@@ -28,6 +28,17 @@ func TestEncoding(t *testing.T) {
 	testEncodingWithFile("latency.txt.gz", t)
 }
 
+func TestEncodingWithPprof(t *testing.T) {
+	data, err := readFileOfIntegers("latency.txt.gz")
+	if err == nil {
+		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from ts.txt.gz.\n", len(data), len(data)*4)
+	} else {
+		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
+	}
+
+	encoding.TestCodecPprof(composition.NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, []int{len(data)}, t)
+}
+
 func testEncodingWithFile(path string, t *testing.T) {
 	data, err := readFileOfIntegers(path)
 	if err == nil {

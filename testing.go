@@ -11,6 +11,7 @@ import (
 	"os"
 	"io"
 	"bytes"
+	"math"
 	"log"
 	"time"
 	"compress/gzip"
@@ -42,35 +43,41 @@ func TestCodec(codec Integer, data []uint32, sizes []int, t *testing.T) {
 }
 
 func TestCodecPprof(codec Integer, data []uint32, sizes []int, t *testing.T) {
-	f, e := os.Create("cpu.compress.prof")
-	if e != nil {
-		log.Fatal(e)
-	}
-	defer f.Close()
+	for _, k := range sizes {
+		if k > len(data) {
+			continue
+		}
 
-	now := time.Now()
-	pprof.StartCPUProfile(f)
-	compressed := Compress(codec, data, len(data))
-	pprof.StopCPUProfile()
+		f, e := os.Create("cpu.compress.prof")
+		if e != nil {
+			log.Fatal(e)
+		}
+		defer f.Close()
 
-	log.Printf("encoding/testTimestampIntegerCodec: Compressed %d integers from %d bytes to %d bytes in %d ns\n", len(data), len(data)*4, len(compressed)*4, time.Since(now).Nanoseconds())
+		now := time.Now()
+		pprof.StartCPUProfile(f)
+		compressed := Compress(codec, data, k)
+		pprof.StopCPUProfile()
 
-	f2, e2 := os.Create("cpu.uncompress.prof")
-	if e2 != nil {
-		log.Fatal(e2)
-	}
-	defer f2.Close()
+		log.Printf("encoding/TestCodecPprof: Compressed %d integers from %d bytes to %d bytes in %d ns\n", k, k*4, len(compressed)*4, time.Since(now).Nanoseconds())
 
-	log.Printf("encoding/testTimestampIntegerCodec: Testing decompression\n")
-	now = time.Now()
-	pprof.StartCPUProfile(f2)
-	recovered := Uncompress(codec, compressed, len(data))
-	pprof.StopCPUProfile()
-	log.Printf("encoding/TestCodecPprof: Uncompressed from %d bytes to %d bytes in %d ns\n", len(compressed)*4, len(recovered)*4, time.Since(now).Nanoseconds())
+		f2, e2 := os.Create("cpu.uncompress.prof")
+		if e2 != nil {
+			log.Fatal(e2)
+		}
+		defer f2.Close()
 
-	for i := 0; i < len(data); i++ {
-		if data[i] != recovered[i] {
-			t.Fatalf("encoding/TestCodecPprof: Problem recovering. Original length = %d, recovered length = %d\n", len(data), len(recovered))
+		log.Printf("encoding/TestCodecPprof: Testing decompression\n")
+		now = time.Now()
+		pprof.StartCPUProfile(f2)
+		recovered := Uncompress(codec, compressed, k)
+		pprof.StopCPUProfile()
+		log.Printf("encoding/TestCodecPprof: Uncompressed from %d bytes to %d bytes in %d ns\n", len(compressed)*4, len(recovered)*4, time.Since(now).Nanoseconds())
+
+		for i := 0; i < len(data); i++ {
+			if data[i] != recovered[i] {
+				t.Fatalf("encoding/TestCodecPprof: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
+			}
 		}
 	}
 }
@@ -97,7 +104,7 @@ func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
 }
 
 func Compress(codec Integer, data []uint32, length int) []uint32 {
-	compressed := make([]uint32, length*2)
+	compressed := make([]uint32, int(math.Floor(float64(length)*1.3)))
 	inpos := NewCursor()
 	outpos := NewCursor()
 	codec.Compress(data, inpos, length, compressed, outpos)
