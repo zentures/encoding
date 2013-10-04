@@ -67,6 +67,10 @@ func NumberOfBitsUint32(x uint32) uint32 {
 }
 
 func MaxDiffBits(initoffset uint32, i []uint32, pos, length int) uint32 {
+	return MaxDiffBits3(initoffset, i, pos, length)
+}
+
+func MaxDiffBits1(initoffset uint32, i []uint32, pos, length int) uint32 {
 	var mask uint32
 	mask |= (i[pos] - initoffset)
 
@@ -77,11 +81,40 @@ func MaxDiffBits(initoffset uint32, i []uint32, pos, length int) uint32 {
 	return NumberOfBitsUint32(mask)
 }
 
+func MaxDiffBits2(initoffset uint32, i []uint32, pos, length int) uint32 {
+	var mask uint32
+
+	last := i[pos]
+	mask |= (last - initoffset)
+
+	for k := pos + 1; k < pos + length; k++ {
+		here := i[k]
+		mask |= here - last
+		last = here
+	}
+
+	return NumberOfBitsUint32(mask)
+}
+
+func MaxDiffBits3(initoffset uint32, i []uint32, pos, length int) uint32 {
+	var mask uint32
+
+	last := i[pos]
+	mask |= (last - initoffset)
+
+	for _, here := range i[pos+1:pos+length] {
+		mask |= here - last
+		last = here
+	}
+
+	return NumberOfBitsUint32(mask)
+}
+
 func MaxBits(i []uint32, pos, length int) uint32 {
 	var mask uint32
 
-	for k := pos; k < pos + length; k++ {
-		mask |= i[k]
+	for _, v := range i[pos:pos+length] {
+		mask |= v
 	}
 
 	return NumberOfBitsUint32(mask)
