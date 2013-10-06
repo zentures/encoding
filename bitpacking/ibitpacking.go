@@ -258,7 +258,14 @@ func integratedpack32(initoffset uint32, in []uint32, inpos int, out []uint32, o
 }
 
 func integratedpack1(initoffset uint32, in []uint32, inpos int, out []uint32, outpos int) {
+	mask := uint32(0)
+	for i, v := range in[inpos:inpos+32] {
+		mask |= (v - initoffset) << uint(i)
+		initoffset =  in[i]
+	}
+	out[outpos] = mask
 
+	/*
 	out[0 + outpos] = (in[0 + inpos] - initoffset) |
 			((in[1 + inpos] - in[1 + inpos - 1])<<1) |
 			((in[2 + inpos] - in[2 + inpos - 1])<<2) |
@@ -291,6 +298,8 @@ func integratedpack1(initoffset uint32, in []uint32, inpos int, out []uint32, ou
 			((in[29 + inpos] - in[29 + inpos - 1])<<29) |
 			((in[30 + inpos] - in[30 + inpos - 1])<<30) |
 			((in[31 + inpos] - in[31 + inpos - 1])<<31)
+
+	*/
 }
 
 
