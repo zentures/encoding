@@ -47,6 +47,9 @@ func testEncodingWithFile(path string, t *testing.T) {
 		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
 	}
 
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion ZigZag BP32+VariableByte\n")
+	encoding.TestCodec(composition.NewComposition(bp32.NewZigZagBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
+
 	log.Printf("encoding/testEncodingWithFile: Testing comprssion Delta BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 

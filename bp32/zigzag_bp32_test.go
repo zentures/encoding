@@ -8,15 +8,8 @@ package bp32
 
 import (
 	"testing"
-	"log"
 	"github.com/reducedb/encoding"
 )
-
-func init() {
-	log.Printf("zigzag_bp32_test/init: generating %d int32s\n", size)
-	data = encoding.GenerateClustered(size, size*2)
-	log.Printf("zigzag_bp32_test/init: generated %d integers for test", size)
-}
 
 func TestZigZagBP32(t *testing.T) {
 	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
