@@ -373,6 +373,27 @@ func (this *ByteBuffer) AsUint32Buffer() *Uint32Buffer {
 	}
 }
 
+// AsInt32Buffer creates a view of this byte buffer as an uint32 buffer.
+//
+// The content of the new buffer will start at this buffer's current position. Changes to this
+// buffer's content will be visible in the new buffer, and vice versa; the two buffers' position,
+// limit, and mark values will be independent.
+//
+// The new buffer's position will be zero, its capacity and its limit will be the number of bytes
+// remaining in this buffer divided by four, and its mark will be undefined. The new buffer will
+// be direct if, and only if, this buffer is direct, and it will be read-only if, and only if,
+// this buffer is read-only.
+func (this *ByteBuffer) AsInt32Buffer() *Int32Buffer {
+	return &Int32Buffer{
+		buf: this.Slice(),
+		size: this.Remaining()/4,
+		limit: this.Remaining()/4,
+		pos: 0,
+		mark: -1,
+		readOnly: this.readOnly,
+	}
+}
+
 func (this *ByteBuffer) Peek() (byte, error) {
 	if !this.HasRemaining() {
 		return 0, errors.New("ByteBuffer/Peek: No more remaining bytes")
@@ -389,6 +410,17 @@ func (this *ByteBuffer) Get() (byte, error) {
 
 	this.pos += 1
 	return this.buf[this.pos], nil
+}
+
+// GetAsUint32 is the same as Get() except it converts byte to uint32 in the return
+// This is mainly a convenience method
+func (this *ByteBuffer) GetAsUint32() (uint32, error) {
+	if !this.HasRemaining() {
+		return 0, errors.New("ByteBuffer/Get: No more remaining bytes")
+	}
+
+	this.pos += 1
+	return uint32(this.buf[this.pos]), nil
 }
 
 // Put is a relative put method

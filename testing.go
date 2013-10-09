@@ -11,7 +11,6 @@ import (
 	"os"
 	"io"
 	"bytes"
-	"math"
 	"log"
 	"time"
 	"compress/gzip"
@@ -19,7 +18,7 @@ import (
 	"runtime/pprof"
 )
 
-func TestCodec(codec Integer, data []uint32, sizes []int, t *testing.T) {
+func TestCodec(codec Integer, data []int32, sizes []int, t *testing.T) {
 	for _, k := range sizes {
 		if k > len(data) {
 			continue
@@ -42,7 +41,7 @@ func TestCodec(codec Integer, data []uint32, sizes []int, t *testing.T) {
 	}
 }
 
-func TestCodecPprof(codec Integer, data []uint32, sizes []int, t *testing.T) {
+func TestCodecPprof(codec Integer, data []int32, sizes []int, t *testing.T) {
 	for _, k := range sizes {
 		if k > len(data) {
 			continue
@@ -74,7 +73,7 @@ func TestCodecPprof(codec Integer, data []uint32, sizes []int, t *testing.T) {
 		pprof.StopCPUProfile()
 		log.Printf("encoding/TestCodecPprof: Uncompressed from %d bytes to %d bytes in %d ns\n", len(compressed)*4, len(recovered)*4, time.Since(now).Nanoseconds())
 
-		for i := 0; i < len(data); i++ {
+		for i := 0; i < k; i++ {
 			if data[i] != recovered[i] {
 				t.Fatalf("encoding/TestCodecPprof: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
 			}
@@ -82,18 +81,19 @@ func TestCodecPprof(codec Integer, data []uint32, sizes []int, t *testing.T) {
 	}
 }
 
-func BenchmarkCompress(codec Integer, data []uint32, b *testing.B) {
-	k := int(CeilBy(uint32(b.N), 128))
+func BenchmarkCompress(codec Integer, data []int32, b *testing.B) {
+	k := CeilBy(b.N, 128)
 
 	b.ResetTimer()
+	now := time.Now()
 	compressed := Compress(codec, data, k)
 	b.StopTimer()
 
-	log.Printf("encoding/BenchmarkCompress: Compressed from %d bytes to %d bytes\n", k*4, len(compressed)*4)
+	log.Printf("encoding/BenchmarkCompress: Compressed %d integers from %d bytes to %d bytes in %d ns\n", k, k*4, len(compressed)*4, time.Since(now).Nanoseconds())
 }
 
-func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
-	k := int(CeilBy(uint32(b.N), 128))
+func BenchmarkUncompress(codec Integer, data []int32, b *testing.B) {
+	k := CeilBy(b.N, 128)
 	compressed := Compress(codec, data, k)
 
 	b.ResetTimer()
@@ -103,17 +103,18 @@ func BenchmarkUncompress(codec Integer, data []uint32, b *testing.B) {
 	log.Printf("encoding/BenchmarkUncompress: Uncompressed from %d bytes to %d bytes\n", len(compressed)*4, len(recovered)*4)
 }
 
-func Compress(codec Integer, data []uint32, length int) []uint32 {
-	compressed := make([]uint32, int(math.Floor(float64(length)*1.3)))
+func Compress(codec Integer, data []int32, length int) []int32 {
+	compressed := make([]int32, length*2)
 	inpos := NewCursor()
 	outpos := NewCursor()
+	log.Printf("testing/Compress: length = %d\n", length)
 	codec.Compress(data, inpos, length, compressed, outpos)
 	compressed = compressed[:outpos.Get()]
 	return compressed
 }
 
-func Uncompress(codec Integer, data []uint32, length int) []uint32 {
-	recovered := make([]uint32, length)
+func Uncompress(codec Integer, data []int32, length int) []int32 {
+	recovered := make([]int32, length)
 	rinpos := NewCursor()
 	routpos := NewCursor()
 	codec.Uncompress(data, rinpos, len(data), recovered, routpos)

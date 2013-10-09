@@ -12,17 +12,17 @@ import (
 	"github.com/reducedb/encoding/buffers"
 )
 
-type IntegratedVariableByte struct {
+type DeltaVariableByte struct {
 
 }
 
-var _ encoding.Integer = (*IntegratedVariableByte)(nil)
+var _ encoding.Integer = (*DeltaVariableByte)(nil)
 
-func NewIntegratedVariableByte() encoding.Integer {
-	return &IntegratedVariableByte{}
+func NewDeltaVariableByte() encoding.Integer {
+	return &DeltaVariableByte{}
 }
 
-func (this *IntegratedVariableByte) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *DeltaVariableByte) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
 		return errors.New("variablebyte/Compress: inlength = 0. No work done.")
 	}
@@ -30,37 +30,18 @@ func (this *IntegratedVariableByte) Compress(in []uint32, inpos *encoding.Cursor
 	//fmt.Printf("variablebyte/Compress: after inlength = %d\n", inlength)
 
 	buf := buffers.NewByteBuffer(inlength*8)
-	initoffset := uint32(0)
+	initoffset := int32(0)
 
-	for k := inpos.Get(); k < inpos.Get() + inlength; k++ {
-		val := in[k] - initoffset
-		//fmt.Printf("variablebyte/Compress: val = %d, initoffset = %d\n", val, initoffset)
-		initoffset = in[k]
+	tmpinpos := inpos.Get()
+	for _, v := range in[tmpinpos:tmpinpos+inlength] {
+		val := uint32(v - initoffset)
+		initoffset = v
 
-		// This section emulates a do..while loop
-		b := val & 127
-		//fmt.Printf("variablebyte/Compress: before val = %d, b = %d\n", val, b)
-		val = val>>7
-
-		if val != 0 {
-			b |= 128
+		for val >= 0x80 {
+			buf.Put(byte(val)|0x80)
+			val >>= 7
 		}
-		//fmt.Printf("variablebyte/Compress: after val = %d, b = %d\n", val, b)
-
-		buf.Put(byte(b))
-
-		for val != 0 {
-			b = val & 127
-			//fmt.Printf("variablebyte/Compress: before val = %d, b = %d\n", val, b)
-			val = val>>7
-
-			if val != 0 {
-				b |= 128
-			}
-			//fmt.Printf("variablebyte/Compress: after val = %d, b = %d\n", val, b)
-
-			buf.Put(byte(b))
-		}
+		buf.Put(byte(val))
 	}
 
 	for buf.Position()%4 != 0 {
@@ -70,9 +51,9 @@ func (this *IntegratedVariableByte) Compress(in []uint32, inpos *encoding.Cursor
 
 	length := buf.Position()
 	buf.Flip()
-	ibuf := buf.AsUint32Buffer()
+	ibuf := buf.AsInt32Buffer()
 	//fmt.Printf("variablebyte/Compress: l = %d, outpos = %d, ibuf = %v, buf = %v\n", length/4, outpos.Get(), ibuf, buf)
-	err := ibuf.GetUint32s(out, outpos.Get(), length/4)
+	err := ibuf.GetInt32s(out, outpos.Get(), length/4)
 	if err != nil {
 		//fmt.Printf("variablebyte/Compress: error with GetUint32s - %v\n", err)
 		return err
@@ -84,23 +65,23 @@ func (this *IntegratedVariableByte) Compress(in []uint32, inpos *encoding.Cursor
 	return nil
 }
 
-func (this *IntegratedVariableByte) Uncompress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *DeltaVariableByte) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
 		return errors.New("variablebyte/Uncompress: inlength = 0. No work done.")
 	}
 
 	//fmt.Printf("variablebyte/Uncompress: after inlength = %d\n", inlength)
 
-	s := 0
+	s := uint(0)
 	p := inpos.Get()
 	finalp := inpos.Get() + inlength
 	tmpoutpos := outpos.Get()
-	initoffset := uint32(0)
-	v := uint32(0)
+	initoffset := int32(0)
+	v := int32(0)
 	shift := uint(0)
 
 	for p < finalp {
-		c := in[p]>>uint(24 - s)
+		c := in[p]>>(24 - s)
 		s += 8
 
 		if s == 32 {
@@ -125,4 +106,3 @@ func (this *IntegratedVariableByte) Uncompress(in []uint32, inpos *encoding.Curs
 
 	return nil
 }
-

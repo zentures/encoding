@@ -17,7 +17,7 @@ type Integer interface {
 	// @param inlength how many integers to compress
 	// @param out output array
 	//* @param outpos  where to write in the output array
-	Compress(in []uint32, inpos *Cursor, inlength int, out []uint32, outpos *Cursor) error;
+	Compress(in []int32, inpos *Cursor, inlength int, out []int32, outpos *Cursor) error;
 
 	/**
 	 * Uncompress data from an array to another array.
@@ -30,5 +30,5 @@ type Integer interface {
 	 * @param out array where to write the compressed output
 	 * @param outpos where to write the compressed output in out
 	 */
-	Uncompress(in []uint32, inpos *Cursor, inlength int, out []uint32, outpos *Cursor) error;
+	Uncompress(in []int32, inpos *Cursor, inlength int, out []int32, outpos *Cursor) error;
 }

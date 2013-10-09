@@ -22,7 +22,7 @@ import (
 )
 
 func TestEncoding(t *testing.T) {
-	testEncodingWithFile("ts.txt.gz", t)
+	//testEncodingWithFile("ts.txt.gz", t)
 	//testEncodingWithFile("srcip.txt.gz", t)
 	//testEncodingWithFile("dstip.txt.gz", t)
 	testEncodingWithFile("latency.txt.gz", t)
@@ -36,7 +36,7 @@ func TestEncodingWithPprof(t *testing.T) {
 		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
 	}
 
-	encoding.TestCodecPprof(composition.NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, []int{len(data)}, t)
+	encoding.TestCodecPprof(composition.NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 }
 
 func testEncodingWithFile(path string, t *testing.T) {
@@ -47,11 +47,11 @@ func testEncodingWithFile(path string, t *testing.T) {
 		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
 	}
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion Integrated BP32+VariableByte\n")
-	encoding.TestCodec(composition.NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, []int{len(data)}, t)
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion Delta BP32+VariableByte\n")
+	encoding.TestCodec(composition.NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion Integrated VariableByte\n")
-	encoding.TestCodec(variablebyte.NewIntegratedVariableByte(), data, []int{len(data)}, t)
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion Delta VariableByte\n")
+	encoding.TestCodec(variablebyte.NewDeltaVariableByte(), data, []int{len(data)}, t)
 
 	log.Printf("encoding/testEncodingWithFile: Testing comprssion BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, []int{len(data)}, t)
@@ -61,7 +61,7 @@ func testEncodingWithFile(path string, t *testing.T) {
 
 	b := make([]byte, len(data)*4)
 	for i := 0; i < len(data); i++ {
-		binary.LittleEndian.PutUint32(b[i*4:], data[i])
+		binary.LittleEndian.PutUint32(b[i*4:], uint32(data[i]))
 	}
 
 	encoding.TestGzip(b, t)
@@ -69,7 +69,7 @@ func testEncodingWithFile(path string, t *testing.T) {
 }
 
 
-func readFileOfIntegers(path string) ([]uint32, error) {
+func readFileOfIntegers(path string) ([]int32, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -78,18 +78,18 @@ func readFileOfIntegers(path string) ([]uint32, error) {
 
 	gunzip, err := gzip.NewReader(file)
 	if err != nil {
-		log.Printf("encoding/readTimestamps: Error opening gzip reader: %v\n", err)
+		log.Printf("encoding/readFileOfIntegers: Error opening gzip reader: %v\n", err)
 		return nil, err
 	}
 
-	result := make([]uint32, 0, 50000000)
+	result := make([]int32, 0, 50000000)
 	scanner := bufio.NewScanner(gunzip)
 	for scanner.Scan() {
 		i, e := strconv.ParseUint(scanner.Text(), 10, 32)
 		if e != nil {
-			log.Printf("encoding/readTimestamps: Error reading from %s. %v\n", path, e)
+			log.Printf("encoding/readFileOfIntegers: Error reading from %s. %v\n", path, e)
 		} else {
-			result = append(result, uint32(i))
+			result = append(result, int32(i))
 		}
 	}
 

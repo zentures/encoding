@@ -8,6 +8,7 @@ package composition
 
 import (
 	"errors"
+	"log"
 	"github.com/reducedb/encoding"
 )
 
@@ -25,7 +26,7 @@ func NewComposition(f1 encoding.Integer, f2 encoding.Integer) encoding.Integer {
 	}
 }
 
-func (this *Composition) Compress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *Composition) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
 		return errors.New("composition/Compress: inlength = 0. No work done.")
 	}
@@ -36,26 +37,26 @@ func (this *Composition) Compress(in []uint32, inpos *encoding.Cursor, inlength 
 		out[0] = 0
 		outpos.Increment()
 	}
-	//fmt.Printf("composition/Compress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	log.Printf("composition/Compress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	inlength -= inpos.Get() - init
 	this.f2.Compress(in, inpos, inlength, out, outpos)
-	//fmt.Printf("composition/Compress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	log.Printf("composition/Compress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	return nil
 }
 
-func (this *Composition) Uncompress(in []uint32, inpos *encoding.Cursor, inlength int, out []uint32, outpos *encoding.Cursor) error {
+func (this *Composition) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
 	if inlength == 0 {
 		return errors.New("composition/Uncompress: inlength = 0. No work done.")
 	}
 
 	init := inpos.Get()
 	this.f1.Uncompress(in, inpos, inlength, out, outpos)
-	//fmt.Printf("composition/Uncompress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//log.Printf("composition/Uncompress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 	inlength -= inpos.Get() - init
 	this.f2.Uncompress(in, inpos, inlength, out, outpos)
-	//fmt.Printf("composition/Uncompress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//log.Printf("composition/Uncompress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	return nil
 }

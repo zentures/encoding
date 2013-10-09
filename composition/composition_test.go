@@ -16,7 +16,7 @@ import (
 
 var (
 	codec encoding.Integer
-	data []uint32
+	data []int32
 	size int = 1000000
 )
 
@@ -26,9 +26,9 @@ func init() {
 	log.Printf("composition_test/init: generated %d integers for test", size)
 }
 
-func TestIntegratedBP32andIntegratedVariableByte(t *testing.T) {
+func TestDeltaBP32andDeltaVariableByte(t *testing.T) {
 	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
-	encoding.TestCodec(NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, sizes, t)
+	encoding.TestCodec(NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, sizes, t)
 }
 
 func TestBP32andVariableByte(t *testing.T) {
@@ -36,12 +36,12 @@ func TestBP32andVariableByte(t *testing.T) {
 	encoding.TestCodec(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, sizes, t)
 }
 
-func BenchmarkIntegratedBP32andIntegratedVariableByteCompress(b *testing.B) {
-	encoding.BenchmarkCompress(NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, b)
+func BenchmarkDeltaBP32andDeltaVariableByteCompress(b *testing.B) {
+	encoding.BenchmarkCompress(NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, b)
 }
 
-func BenchmarkIntegratedBP32andIntegratedVariableByteUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(NewComposition(bp32.NewIntegratedBP32(), variablebyte.NewIntegratedVariableByte()), data, b)
+func BenchmarkDeltaBP32andDeltaVariableByteUncompress(b *testing.B) {
+	encoding.BenchmarkUncompress(NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, b)
 }
 
 func BenchmarkBP32andVariableByteCompress(b *testing.B) {

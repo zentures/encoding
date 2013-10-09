@@ -24,7 +24,7 @@ func GenerateUniformInBytes(N, max int) *bytes.Buffer {
 	data := GenerateUniform(N, max)
 	b := make([]byte, N*4)
 	for i := 0; i < N; i++ {
-		binary.LittleEndian.PutUint32(b[i*4:], data[i])
+		binary.LittleEndian.PutUint32(b[i*4:], uint32(data[i]))
 	}
 
 	return bytes.NewBuffer(b)
@@ -34,13 +34,13 @@ func GenerateClusteredInBytes(N, max int) *bytes.Buffer {
 	data := GenerateClustered(N, max)
 	b := make([]byte, N*4)
 	for i := 0; i < N; i++ {
-		binary.LittleEndian.PutUint32(b[i*4:], data[i])
+		binary.LittleEndian.PutUint32(b[i*4:], uint32(data[i]))
 	}
 
 	return bytes.NewBuffer(b)
 }
 
-func GenerateUniform(N, max int) []uint32 {
+func GenerateUniform(N, max int) []int32 {
 	if N*2 > max {
 		return negate(GenerateUniform(max - N, max), max)
 	}
@@ -55,20 +55,20 @@ func GenerateUniform(N, max int) []uint32 {
 	return r
 }
 
-func GenerateClustered(N, max int) []uint32 {
-	ans := make([]uint32, N)
+func GenerateClustered(N, max int) []int32 {
+	ans := make([]int32, N)
 	fillClustered(ans, 0, N, 0, max)
 	return ans
 }
 
-func fillUniform(ans[]uint32, offset, length, min, max int) {
+func fillUniform(ans[]int32, offset, length, min, max int) {
 	v := GenerateUniform(length, max - min)
 	for k := 0; k < len(v); k++ {
-		ans[k + offset] = uint32(min) + v[k]
+		ans[k + offset] = int32(min) + v[k]
 	}
 }
 
-func fillClustered(ans[]uint32, offset, length, min, max int) {
+func fillClustered(ans[]int32, offset, length, min, max int) {
 	btwn := max - min
 	if btwn == length || length <= 10 {
 		fillUniform(ans, offset, length, min, max)
@@ -94,10 +94,10 @@ func fillClustered(ans[]uint32, offset, length, min, max int) {
 	}
 }
 
-func negate(x []uint32, max int) []uint32 {
-	ans := make([]uint32, max - len(x))
+func negate(x []int32, max int) []int32 {
+	ans := make([]int32, max - len(x))
 
-	var i, c uint32
+	var i, c int32
 
 	for j := 0; j < len(x); j++ {
 		v := x[j]
@@ -117,13 +117,13 @@ func negate(x []uint32, max int) []uint32 {
 	return ans
 }
 
-func generateUniformBitmap(N, max int) ([]uint32, error) {
+func generateUniformBitmap(N, max int) ([]int32, error) {
 	if N > max {
 		return nil, errors.New("encoding/generateUniformBitmap: N > max, not possible")
 	}
 
 	r := rand.New(rand.NewSource(c1))
-	ans := make([]uint32, N)
+	ans := make([]int32, N)
 	bs := bitset.New(uint(max))
 	cardinality := uint(0)
 
@@ -135,7 +135,7 @@ func generateUniformBitmap(N, max int) ([]uint32, error) {
 		}
 	}
 
-	for i, c := uint32(0), 0; c < N; i++ {
+	for i, c := int32(0), 0; c < N; i++ {
 		if bs.Test(uint(i)) {
 			ans[c] = i
 			c += 1
@@ -145,13 +145,13 @@ func generateUniformBitmap(N, max int) ([]uint32, error) {
 	return ans, nil
 }
 
-func generateUniformHash(N, max int) ([]uint32, error) {
+func generateUniformHash(N, max int) ([]int32, error) {
 	if N > max {
 		return nil, errors.New("encoding/generateUniformBitmap: N > max, not possible")
 	}
 
 	r := rand.New(rand.NewSource(c2))
-	ans := make([]uint32, N)
+	ans := make([]int32, N)
 	s := make(map[int]bool)
 
 	for len(s) < N {
@@ -167,7 +167,7 @@ func generateUniformHash(N, max int) ([]uint32, error) {
 	sort.Ints(tmpans)
 
 	for i := 0; i < len(tmpans); i++ {
-		ans[i] = uint32(tmpans[i])
+		ans[i] = int32(tmpans[i])
 	}
 
 	return ans, nil

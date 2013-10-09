@@ -10,30 +10,88 @@ import (
 	"fmt"
 )
 
-func FloorBy(value, factor uint32) uint32 {
+func FloorBy(value, factor int) int {
 	return value - value%factor
 }
 
-func CeilBy(value, factor uint32) uint32 {
+func CeilBy(value, factor int) int {
 	return value + factor - value%factor
 }
 
-// Copied from http://www.hackersdelight.org/hdcodetxt/nlz.c.txt - nlz2
-func NumberOfLeadingZerosUint32_3(x uint32) uint32 {
-	var n uint32 = 32
-	var y uint32 = 0
+func LeadingBitPosition(x uint32) uint32 {
+	return 32 - nlz1a(x)
+}
 
-	y = x >>16;  if (y != 0) {n = n -16;  x = y;}
-	y = x >> 8;  if (y != 0) {n = n - 8;  x = y;}
-	y = x >> 4;  if (y != 0) {n = n - 4;  x = y;}
-	y = x >> 2;  if (y != 0) {n = n - 2;  x = y;}
-	y = x >> 1;  if (y != 0) { return n - 2 }
-	return n - x
+func DeltaMaxBits(initoffset int32, buf []int32) int32 {
+	var mask int32
 
+	for _, cur := range buf {
+		mask |= cur - initoffset
+		initoffset = cur
+	}
+
+	return int32(LeadingBitPosition(uint32(mask)))
+}
+
+func MaxBits(buf []int32) int32 {
+	var mask int32
+
+	for _, v := range buf {
+		mask |= v
+	}
+
+	return int32(LeadingBitPosition(uint32(mask)))
+}
+
+func PrintInt32sInBits(buf []int32) {
+	fmt.Println("                           10987654321098765432109876543210")
+	//for i := pos; i < pos + length; i++ {
+    for i, v := range buf {
+		fmt.Printf("%4d: %20d %032b\n", i, v, uint32(v))
+	}
+}
+
+func Delta(in, out []int32) {
+	offset := int32(0)
+
+	for i, v := range in {
+		out[i] = v - offset
+		offset = v
+	}
+}
+
+func InverseDelta(in, out []int32) {
+	offset := int32(0)
+
+	for i, v := range in {
+		out[i] = v + offset
+		offset = out[i]
+	}
+}
+
+// https://developers.google.com/protocol-buffers/docs/encoding#types
+func ZigZagDelta(in, out []int32) {
+	offset := int32(0)
+
+	for i, v := range in {
+		n := v - offset
+		out[i] = (n << 1) ^ (n >> 31)
+		offset = v
+	}
+}
+
+func InverseZigZagDelta(in, out []int32) {
+	offset := int32(0)
+
+	for i, v := range in {
+		n := (v >> 1) ^ ((v & 1) * -1);
+		out[i] = n + offset
+		offset = out[i]
+	}
 }
 
 // Copied from http://www.hackersdelight.org/hdcodetxt/nlz.c.txt - nlz1a
-func NumberOfLeadingZerosUint32_2(x uint32) uint32 {
+func nlz1a(x uint32) uint32 {
 	var n uint32 = 0
 	if (x <= 0) { return (^x >> 26) & 32 }
 
@@ -45,85 +103,5 @@ func NumberOfLeadingZerosUint32_2(x uint32) uint32 {
 	if ((x >> 30) == 0) { n = n + 2; x = x << 2 }
 	n = n - (x >> 31)
 	return n
-}
-
-// Copied from http://www.hackersdelight.org/hdcodetxt/nlz.c.txt - nlz1
-func NumberOfLeadingZerosUint32(x uint32) uint32 {
-	var n uint32 = 0
-
-	if (x == 0) { return 32 }
-
-	if (x <= 0x0000FFFF) { n = n + 16; x = x<<16 }
-	if (x <= 0x00FFFFFF) { n = n + 8; x = x<<8 }
-	if (x <= 0x0FFFFFFF) { n = n + 4; x = x<<4 }
-	if (x <= 0x3FFFFFFF) { n = n + 2; x = x<<2 }
-	if (x <= 0x7FFFFFFF) { n = n + 1; }
-
-	return n
-}
-
-func NumberOfBitsUint32(x uint32) uint32 {
-	return 32 - NumberOfLeadingZerosUint32_2(x)
-}
-
-func MaxDiffBits(initoffset uint32, i []uint32, pos, length int) uint32 {
-	return MaxDiffBits3(initoffset, i, pos, length)
-}
-
-func MaxDiffBits1(initoffset uint32, i []uint32, pos, length int) uint32 {
-	var mask uint32
-	mask |= (i[pos] - initoffset)
-
-	for k := pos + 1; k < pos + length; k++ {
-		mask |= i[k] - i[k - 1]
-	}
-
-	return NumberOfBitsUint32(mask)
-}
-
-func MaxDiffBits2(initoffset uint32, i []uint32, pos, length int) uint32 {
-	var mask uint32
-
-	last := i[pos]
-	mask |= (last - initoffset)
-
-	for k := pos + 1; k < pos + length; k++ {
-		here := i[k]
-		mask |= here - last
-		last = here
-	}
-
-	return NumberOfBitsUint32(mask)
-}
-
-func MaxDiffBits3(initoffset uint32, i []uint32, pos, length int) uint32 {
-	var mask uint32
-
-	last := i[pos]
-	mask |= (last - initoffset)
-
-	for _, here := range i[pos+1:pos+length] {
-		mask |= here - last
-		last = here
-	}
-
-	return NumberOfBitsUint32(mask)
-}
-
-func MaxBits(i []uint32, pos, length int) uint32 {
-	var mask uint32
-
-	for _, v := range i[pos:pos+length] {
-		mask |= v
-	}
-
-	return NumberOfBitsUint32(mask)
-}
-
-func PrintUint32sInBits(buf []uint32, pos, length int) {
-	fmt.Println("                           10987654321098765432109876543210")
-	for i := pos; i < pos + length; i++ {
-		fmt.Printf("%4d: %20d %032b\n", i, uint32(buf[i]), uint32(buf[i]))
-	}
 }
 
