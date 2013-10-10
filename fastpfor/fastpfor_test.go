@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	data []uint32
-	size int = 1000
+	data []int32
+	size int = 10000000
 )
 
 func init() {
