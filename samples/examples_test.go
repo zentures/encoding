@@ -17,6 +17,7 @@ import (
 	"runtime"
 	"github.com/reducedb/encoding"
 	"github.com/reducedb/encoding/composition"
+	"github.com/reducedb/encoding/fastpfor"
 	"github.com/reducedb/encoding/bp32"
 	"github.com/reducedb/encoding/variablebyte"
 )
@@ -47,6 +48,9 @@ func testEncodingWithFile(path string, t *testing.T) {
 		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
 	}
 
+	log.Printf("encoding/testEncodingWithFile: Testing comprssion FastPFOR+VariableByte\n")
+	encoding.TestCodec(composition.NewComposition(fastpfor.New(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
+
 	log.Printf("encoding/testEncodingWithFile: Testing comprssion ZigZag BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewZigZagBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 
@@ -67,8 +71,8 @@ func testEncodingWithFile(path string, t *testing.T) {
 		binary.LittleEndian.PutUint32(b[i*4:], uint32(data[i]))
 	}
 
-	encoding.TestGzip(b, t)
-	encoding.TestLZW(b, t)
+	encoding.RunTestGzip(b, t)
+	encoding.RunTestLZW(b, t)
 }
 
 

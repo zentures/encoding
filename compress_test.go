@@ -10,7 +10,6 @@ import (
 	"testing"
 	"io"
 	"fmt"
-	"reflect"
 	"compress/lzw"
 	"compress/gzip"
 	"encoding/binary"
@@ -21,7 +20,7 @@ func generateDataInBytes(N int) *bytes.Buffer {
 	data := GenerateClustered(N, N*2)
 	b := make([]byte, N*4)
 	for i := 0; i < N; i++ {
-		binary.LittleEndian.PutUint32(b[i*4:], data[i])
+		binary.LittleEndian.PutUint32(b[i*4:], uint32(data[i]))
 	}
 
 	fmt.Printf("encoding/generateData: len(data) = %d bytes\n", len(b))
@@ -41,7 +40,7 @@ func runLZWDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 	recovered := make([]byte, length*4)
 	r := lzw.NewReader(data, lzw.MSB, 8)
 	defer r.Close()
-	
+
 	total := 0
 	n := 0
 	var err error = nil
@@ -60,17 +59,7 @@ func runLZWDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 func TestLZW(t *testing.T) {
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
 		data := generateDataInBytes(k)
-
-		compressed := runLZWCompress(data)
-		cl := compressed.Len()
-		fmt.Printf("encoding/TestBasicExample: Compressed from %d bytes to %d bytes\n", len(data.Bytes()), cl)
-
-		recovered := runLZWDecompress(compressed, k)
-		fmt.Printf("encoding/TestBasicExample: Decompressed from %d bytes to %d bytes\n", cl, len(recovered.Bytes()))
-
-		if !reflect.DeepEqual(data, recovered) {
-			t.Fatalf("encoding/TestBasicExample: Problem recovering. Original length = %d, recovered length = %d\n", len(data.Bytes()), len(recovered.Bytes()))
-		}
+        RunTestLZW(data.Bytes(), t)
 	}
 }
 
@@ -127,17 +116,7 @@ func runGzipDecompress(data *bytes.Buffer, length int) *bytes.Buffer {
 func TestGzip(t *testing.T) {
 	for _, k := range []int{1, 13, 133, 1333, 133333, 13333333} {
 		data := generateDataInBytes(k)
-
-		compressed := runGzipCompress(data)
-		cl := compressed.Len()
-		fmt.Printf("encoding/TestGzip: Compressed from %d bytes to %d bytes\n", len(data.Bytes()), cl)
-
-		recovered := runGzipDecompress(compressed, k)
-		fmt.Printf("encoding/TestGzip: Decompressed from %d bytes to %d bytes\n", cl, len(recovered.Bytes()))
-
-		if !reflect.DeepEqual(data, recovered) {
-			t.Fatalf("encoding/TestGzip: Problem recovering. Original length = %d, recovered length = %d\n", len(data.Bytes()), len(recovered.Bytes()))
-		}
+        RunTestGzip(data.Bytes(), t)
 	}
 }
 

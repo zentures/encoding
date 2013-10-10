@@ -121,7 +121,7 @@ func Uncompress(codec Integer, data []int32, length int) []int32 {
 	return recovered
 }
 
-func TestGzip(data []byte, t *testing.T) {
+func RunTestGzip(data []byte, t *testing.T) {
 	log.Printf("encoding/TestGzip: Testing comprssion Gzip\n")
 
 	var compressed bytes.Buffer
@@ -147,7 +147,7 @@ func TestGzip(data []byte, t *testing.T) {
 	log.Printf("encoding/TestGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
 }
 
-func TestLZW(data []byte, t *testing.T) {
+func RunTestLZW(data []byte, t *testing.T) {
 	log.Printf("encoding/TestLZW: Testing comprssion LZW\n")
 
 	var compressed bytes.Buffer

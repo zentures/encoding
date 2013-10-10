@@ -18,8 +18,8 @@ func CeilBy(value, factor int) int {
 	return value + factor - value%factor
 }
 
-func LeadingBitPosition(x uint32) uint32 {
-	return 32 - nlz1a(x)
+func LeadingBitPosition(x uint32) int32 {
+	return 32 - int32(nlz1a(x))
 }
 
 func DeltaMaxBits(initoffset int32, buf []int32) int32 {
@@ -30,7 +30,7 @@ func DeltaMaxBits(initoffset int32, buf []int32) int32 {
 		initoffset = cur
 	}
 
-	return int32(LeadingBitPosition(uint32(mask)))
+	return LeadingBitPosition(uint32(mask))
 }
 
 func MaxBits(buf []int32) int32 {
@@ -40,7 +40,7 @@ func MaxBits(buf []int32) int32 {
 		mask |= v
 	}
 
-	return int32(LeadingBitPosition(uint32(mask)))
+	return LeadingBitPosition(uint32(mask))
 }
 
 func PrintInt32sInBits(buf []int32) {
@@ -84,7 +84,8 @@ func InverseZigZagDelta(in, out []int32) {
 	offset := int32(0)
 
 	for i, v := range in {
-		n := int32(uint32(v) >> 1) ^ (-(v & 1))
+		//n := int32(uint32(v) >> 1) ^ (-(v & 1))
+		n := int32(uint32(v) >> 1) ^ ((v << 31) >> 31)
 		out[i] = n + offset
 		offset = out[i]
 	}
