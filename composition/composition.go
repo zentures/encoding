@@ -8,7 +8,6 @@ package composition
 
 import (
 	"errors"
-	"log"
 	"github.com/reducedb/encoding"
 )
 
@@ -37,11 +36,11 @@ func (this *Composition) Compress(in []int32, inpos *encoding.Cursor, inlength i
 		out[0] = 0
 		outpos.Increment()
 	}
-	log.Printf("composition/Compress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//log.Printf("composition/Compress: f1 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	inlength -= inpos.Get() - init
 	this.f2.Compress(in, inpos, inlength, out, outpos)
-	log.Printf("composition/Compress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
+	//log.Printf("composition/Compress: f2 inpos = %d, outpos = %d, inlength = %d\n", inpos.Get(), outpos.Get(), inlength)
 
 	return nil
 }

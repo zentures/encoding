@@ -43,6 +43,8 @@ func (this *ZigZagBP32) Compress(in []int32, inpos *encoding.Cursor, inlength in
 
 	for ; s < finalinpos; s += DefaultBlockSize {
 		encoding.ZigZagDelta(in[s:s+DefaultBlockSize], delta)
+		//log.Printf("zigzag_bp32/Compress: in = %v\n", in[s:s+DefaultBlockSize])
+		//log.Printf("zigzag_bp32/Compress: delta = %v\n", delta)
 
 		mbits1 := encoding.MaxBits(delta[0:32])
 		mbits2 := encoding.MaxBits(delta[32:64])
@@ -75,6 +77,8 @@ func (this *ZigZagBP32) Compress(in []int32, inpos *encoding.Cursor, inlength in
 		//encoding.PrintUint32sInBits(in, s+3*32, 32)
 		//encoding.PrintUint32sInBits(out, tmpoutpos, int(mbits4))
 		tmpoutpos += int(mbits4)
+
+		//log.Printf("zigzag_bp32/Compress: out = %v\n", out[s:s+DefaultBlockSize])
 	}
 
 	inpos.Add(inlength)
@@ -124,7 +128,9 @@ func (this *ZigZagBP32) Uncompress(in []int32, inpos *encoding.Cursor, inlength 
 
 		encoding.InverseZigZagDelta(delta, out[s:s+DefaultBlockSize])
 
-		//log.Printf("zigzag_bp32/Uncompress: out = %v\n", out)
+		//log.Printf("zigzag_bp32/Uncompress: delta = %v\n", delta)
+		//log.Printf("zigzag_bp32/Uncompress: out = %v\n", out[s:s+DefaultBlockSize])
+
 	}
 
 	outpos.Add(outlength)

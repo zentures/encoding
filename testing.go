@@ -35,7 +35,7 @@ func TestCodec(codec Integer, data []int32, sizes []int, t *testing.T) {
 
 		for i := 0; i < k; i++ {
 			if data[i] != recovered[i] {
-				t.Fatalf("encoding/TestCodec: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
+				t.Fatalf("encoding/TestCodec: Problem recovering. index = %d, data = %d, recovered = %d, original length = %d, recovered length = %d\n", i, data[i], recovered[i], k, len(recovered))
 			}
 		}
 	}
@@ -75,7 +75,7 @@ func TestCodecPprof(codec Integer, data []int32, sizes []int, t *testing.T) {
 
 		for i := 0; i < k; i++ {
 			if data[i] != recovered[i] {
-				t.Fatalf("encoding/TestCodecPprof: Problem recovering. Original length = %d, recovered length = %d\n", k, len(recovered))
+				t.Fatalf("encoding/TestCodecPprof: Problem recovering. index = %d, data = %d, recovered = %d, original length = %d, recovered length = %d\n", i, data[i], recovered[i], k, len(recovered))
 			}
 		}
 	}
@@ -107,7 +107,6 @@ func Compress(codec Integer, data []int32, length int) []int32 {
 	compressed := make([]int32, length*2)
 	inpos := NewCursor()
 	outpos := NewCursor()
-	log.Printf("testing/Compress: length = %d\n", length)
 	codec.Compress(data, inpos, length, compressed, outpos)
 	compressed = compressed[:outpos.Get()]
 	return compressed

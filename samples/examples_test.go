@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 	"bufio"
-	"encoding/binary"
+	//"encoding/binary"
 	"compress/gzip"
 	"strconv"
 	"runtime"
@@ -22,21 +22,21 @@ import (
 )
 
 func TestEncoding(t *testing.T) {
-	//testEncodingWithFile("ts.txt.gz", t)
-	//testEncodingWithFile("srcip.txt.gz", t)
-	//testEncodingWithFile("dstip.txt.gz", t)
+	testEncodingWithFile("ts.txt.gz", t)
+	testEncodingWithFile("srcip.txt.gz", t)
+	testEncodingWithFile("dstip.txt.gz", t)
 	testEncodingWithFile("latency.txt.gz", t)
 }
 
 func TestEncodingWithPprof(t *testing.T) {
-	data, err := readFileOfIntegers("latency.txt.gz")
+	data, err := readFileOfIntegers("ts.txt.gz")
 	if err == nil {
 		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from ts.txt.gz.\n", len(data), len(data)*4)
 	} else {
 		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
 	}
 
-	encoding.TestCodecPprof(composition.NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
+	encoding.TestCodecPprof(composition.NewComposition(bp32.NewZigZagBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 }
 
 func testEncodingWithFile(path string, t *testing.T) {

@@ -84,7 +84,7 @@ func InverseZigZagDelta(in, out []int32) {
 	offset := int32(0)
 
 	for i, v := range in {
-		n := (v >> 1) ^ ((v & 1) * -1);
+		n := int32(uint32(v) >> 1) ^ (-(v & 1))
 		out[i] = n + offset
 		offset = out[i]
 	}
