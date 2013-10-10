@@ -14,7 +14,6 @@ package buffers
 
 import (
 	"fmt"
-	"log"
 	"errors"
 	"encoding/binary"
 )
@@ -184,7 +183,7 @@ func (this *Int32Buffer) Get() (int32, error) {
 		return 0, errors.New("int32buffer/Get: Insufficient remaining buffer for Uint32")
 	}
 
-	result, err := this.buf.GetUint32()
+	result, err := this.buf.GetUint32At(this.pos*4)
 	if err == nil {
 		this.pos += 1
 	}
@@ -248,7 +247,7 @@ func (this *Int32Buffer) Put(value int32) error {
 		return fmt.Errorf("int32buffer/Put: Insufficient remaining space (%t) for putting int32", this.HasRemaining())
 	}
 
-	if err := this.buf.PutUint32(uint32(value)); err != nil {
+	if err := this.buf.PutUint32At(this.pos*4, uint32(value)); err != nil {
 		return errors.New("int32buffer/Put: " + err.Error())
 	}
 
@@ -287,14 +286,11 @@ func (this *Int32Buffer) PutInt32s(dst []int32, offset, length int) error {
 		return fmt.Errorf("int32buffer/PutInt32s: Insufficient buffer size. Length (%d) is greater than remaining buffer (%d).", length, this.Remaining())
 	}
 
-	log.Printf("int32buffer/PutInt32s: before remaining = %d, length = %d, offset = %d, pos = %d\n", this.Remaining(), length, offset, this.pos)
 	for i := offset; i < length + offset; i++ {
 		if err := this.Put(dst[i]); err != nil {
 			return errors.New("int32buffer/PutInt32s: " + err.Error())
 		}
-		log.Printf("int32buffer/PutInt32s: this.pos = %d\n", this.pos)
 	}
-	log.Printf("int32buffer/PutInt32s: after remaining = %d\n", this.Remaining())
 
 	return nil
 }
