@@ -22,14 +22,35 @@ import (
 	"github.com/reducedb/encoding/variablebyte"
 )
 
-func TestEncoding(t *testing.T) {
-	testEncodingWithFile("ts.txt.gz", t)
-	testEncodingWithFile("srcip.txt.gz", t)
-	testEncodingWithFile("dstip.txt.gz", t)
-	testEncodingWithFile("latency.txt.gz", t)
+func TestEncodingGenerateClustered(t *testing.T) {
+	var size int = 10000000
+
+	log.Printf("bp32/init: generating %d int32s\n", size)
+	data := encoding.GenerateClustered(size, size*2)
+	testEncodingWithData(data, t)
 }
 
-func TestPprofEncoding(t *testing.T) {
+func TestEncodingGenerateUniform(t *testing.T) {
+	var size int = 10000000
+
+	log.Printf("bp32/init: generating %d int32s\n", size)
+	data := encoding.GenerateUniform(size, size*2)
+	testEncodingWithData(data, t)
+}
+
+func TestEncodingFiles(t *testing.T) {
+	for _, f := range []string{"ts.txt.gz", "scrip.txt.gz", "dstip.txt.gz", "latency.txt.gz"} {
+		data, err := readFileOfIntegers(f)
+		if err == nil {
+			log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, f)
+			testEncodingWithData(data, t)
+		} else {
+			log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
+		}
+	}
+}
+
+func TestEncodingPprof(t *testing.T) {
 	data, err := readFileOfIntegers("ts.txt.gz")
 	if err == nil {
 		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from ts.txt.gz.\n", len(data), len(data)*4)
@@ -40,30 +61,23 @@ func TestPprofEncoding(t *testing.T) {
 	encoding.TestCodecPprof(composition.NewComposition(bp32.NewZigZagBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 }
 
-func testEncodingWithFile(path string, t *testing.T) {
-	data, err := readFileOfIntegers(path)
-	if err == nil {
-		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, path)
-	} else {
-		log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
-	}
-
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion FastPFOR+VariableByte\n")
+func testEncodingWithData(data []int32, t *testing.T) {
+	log.Printf("encoding/testEncodingWithData: Testing comprssion FastPFOR+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(fastpfor.New(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion ZigZag BP32+VariableByte\n")
+	log.Printf("encoding/testEncodingWithData: Testing comprssion ZigZag BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewZigZagBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion Delta BP32+VariableByte\n")
+	log.Printf("encoding/testEncodingWithData: Testing comprssion Delta BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion Delta VariableByte\n")
+	log.Printf("encoding/testEncodingWithData: Testing comprssion Delta VariableByte\n")
 	encoding.TestCodec(variablebyte.NewDeltaVariableByte(), data, []int{len(data)}, t)
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion BP32+VariableByte\n")
+	log.Printf("encoding/testEncodingWithData: Testing comprssion BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, []int{len(data)}, t)
 
-	log.Printf("encoding/testEncodingWithFile: Testing comprssion VariableByte\n")
+	log.Printf("encoding/testEncodingWithData: Testing comprssion VariableByte\n")
 	encoding.TestCodec(variablebyte.NewVariableByte(), data, []int{len(data)}, t)
 
 	b := make([]byte, len(data)*4)
@@ -74,7 +88,6 @@ func testEncodingWithFile(path string, t *testing.T) {
 	encoding.RunTestGzip(b, t)
 	encoding.RunTestLZW(b, t)
 }
-
 
 func readFileOfIntegers(path string) ([]int32, error) {
 	file, err := os.Open(path)
