@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 	"bufio"
-	"encoding/binary"
+	//"encoding/binary"
 	"compress/gzip"
 	"strconv"
 	"runtime"
@@ -29,7 +29,7 @@ func TestEncoding(t *testing.T) {
 	testEncodingWithFile("latency.txt.gz", t)
 }
 
-func TestEncodingWithPprof(t *testing.T) {
+func TestPprofEncoding(t *testing.T) {
 	data, err := readFileOfIntegers("ts.txt.gz")
 	if err == nil {
 		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from ts.txt.gz.\n", len(data), len(data)*4)
