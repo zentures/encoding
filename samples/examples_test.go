@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 	"bufio"
-	//"encoding/binary"
+	"encoding/binary"
 	"compress/gzip"
 	"strconv"
 	"runtime"
