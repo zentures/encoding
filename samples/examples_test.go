@@ -22,35 +22,29 @@ import (
 	"github.com/reducedb/encoding/variablebyte"
 )
 
-func TestEncodingGenerateClustered(t *testing.T) {
+func TestEncoding(t *testing.T) {
 	var size int = 10000000
 
-	log.Printf("bp32/init: generating %d int32s\n", size)
+	log.Printf("examples_test/TestEncoding: generating %d clustered int32s\n", size)
 	data := encoding.GenerateClustered(size, size*2)
 	testEncodingWithData(data, t)
-}
 
-func TestEncodingGenerateUniform(t *testing.T) {
-	var size int = 10000000
-
-	log.Printf("bp32/init: generating %d int32s\n", size)
-	data := encoding.GenerateUniform(size, size*2)
+	log.Printf("examples_test/TestEncoding: generating %d uniform int32s\n", size)
+	data = encoding.GenerateUniform(size, size*2)
 	testEncodingWithData(data, t)
-}
 
-func TestEncodingFiles(t *testing.T) {
-	for _, f := range []string{"ts.txt.gz", "scrip.txt.gz", "dstip.txt.gz", "latency.txt.gz"} {
+	for _, f := range []string{"ts.txt.gz", "srcip.txt.gz", "dstip.txt.gz", "latency.txt.gz"} {
 		data, err := readFileOfIntegers(f)
 		if err == nil {
-			log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, f)
+			log.Printf("examples_test/TestEncoding: Read %d integers (%d bytes) from %s.\n", len(data), len(data)*4, f)
 			testEncodingWithData(data, t)
 		} else {
-			log.Printf("encoding/testEncodingWithFile: Error opening ts.txt.gz: %v\n", err)
+			log.Printf("examples_test/TestEncoding: Error opening %s: %v\n", f, err)
 		}
 	}
 }
 
-func TestEncodingPprof(t *testing.T) {
+func TestPprofEncoding(t *testing.T) {
 	data, err := readFileOfIntegers("ts.txt.gz")
 	if err == nil {
 		log.Printf("encoding/testEncodingWithFile: Read %d integers (%d bytes) from ts.txt.gz.\n", len(data), len(data)*4)
