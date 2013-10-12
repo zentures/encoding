@@ -16,6 +16,7 @@ import (
 	"compress/gzip"
 	"compress/lzw"
 	"runtime/pprof"
+	"code.google.com/p/snappy-go/snappy"
 )
 
 func TestCodec(codec Integer, data []int32, sizes []int, t *testing.T) {
@@ -122,7 +123,7 @@ func Uncompress(codec Integer, data []int32, length int) []int32 {
 }
 
 func RunTestGzip(data []byte, t *testing.T) {
-	log.Printf("encoding/TestGzip: Testing comprssion Gzip\n")
+	log.Printf("encoding/RunTestGzip: Testing comprssion Gzip\n")
 
 	var compressed bytes.Buffer
 	w := gzip.NewWriter(&compressed)
@@ -131,7 +132,7 @@ func RunTestGzip(data []byte, t *testing.T) {
 	w.Write(data)
 
 	cl := compressed.Len()
-	log.Printf("encoding/TestGzip: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+	log.Printf("encoding/RunTestGzip: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
 
 	recovered := make([]byte, len(data))
 	r, _ := gzip.NewReader(&compressed)
@@ -144,11 +145,11 @@ func RunTestGzip(data []byte, t *testing.T) {
 		n, err = r.Read(recovered[total:])
 		total += n
 	}
-	log.Printf("encoding/TestGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+	log.Printf("encoding/RunTestGzip: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
 }
 
 func RunTestLZW(data []byte, t *testing.T) {
-	log.Printf("encoding/TestLZW: Testing comprssion LZW\n")
+	log.Printf("encoding/RunTestLZW: Testing comprssion LZW\n")
 
 	var compressed bytes.Buffer
 	w := lzw.NewWriter(&compressed, lzw.MSB, 8)
@@ -157,7 +158,7 @@ func RunTestLZW(data []byte, t *testing.T) {
 	w.Write(data)
 
 	cl := compressed.Len()
-	log.Printf("encoding/TestLZW: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
+	log.Printf("encoding/RunTestLZW: Compressed from %d bytes to %d bytes in %d ns\n", len(data), cl, time.Since(now).Nanoseconds())
 
 	recovered := make([]byte, len(data))
 	r := lzw.NewReader(&compressed, lzw.MSB, 8)
@@ -170,5 +171,26 @@ func RunTestLZW(data []byte, t *testing.T) {
 		n, err = r.Read(recovered[total:])
 		total += n
 	}
-	log.Printf("encoding/TestLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+	log.Printf("encoding/RunTestLZW: Uncompressed from %d bytes to %d bytes in %d ns\n", cl, len(recovered), time.Since(now).Nanoseconds())
+}
+
+func RunTestSnappy(data []byte, t *testing.T) {
+	log.Printf("encoding/RunTestSnappy: Testing comprssion Snappy\n")
+
+	now := time.Now()
+	e, err := snappy.Encode(nil, data)
+	if err != nil {
+		t.Fatalf("encoding/RunTestSnappy: encoding error: %v\n", err)
+	}
+	log.Printf("encoding/RunTestSnappy: Compressed from %d bytes to %d bytes in %d ns\n", len(data), len(e), time.Since(now).Nanoseconds())
+
+	d, err := snappy.Decode(nil, e)
+	if err != nil {
+		t.Fatalf("encoding/RunTestSnappy: decoding error: %v\n", err)
+	}
+	log.Printf("encoding/RunTestSnappy: Uncompressed from %d bytes to %d bytes in %d ns\n", len(e), len(d), time.Since(now).Nanoseconds())
+
+	if !bytes.Equal(data, d) {
+		t.Fatalf("encoding/RunTestSnappy: roundtrip mismatch\n")
+	}
 }

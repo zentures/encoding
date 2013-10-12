@@ -81,6 +81,7 @@ func testEncodingWithData(data []int32, t *testing.T) {
 
 	encoding.RunTestGzip(b, t)
 	encoding.RunTestLZW(b, t)
+	encoding.RunTestSnappy(b, t)
 }
 
 func readFileOfIntegers(path string) ([]int32, error) {
