@@ -73,7 +73,7 @@ func (this *DeltaFastPFOR) Uncompress(in []int32, inpos *encoding.Cursor, inleng
 	if inlength == 0 {
 		return errors.New("fastpfor/Uncompress: inlength = 0. No work done.")
 	}
-	
+
 	mynvalue := in[inpos.Get()]
 	inpos.Increment()
 
@@ -146,11 +146,24 @@ func (this *DeltaFastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissi
 
 	for finalInpos := tmpinpos + int32(thissize) - DefaultBlockSize; tmpinpos <= finalInpos; tmpinpos += DefaultBlockSize {
 		offset := int32(initoffset.Get())
+		/*
 		for i, v := range in[tmpinpos:tmpinpos+DefaultBlockSize] {
 			delta[i] = v - offset
 			offset = v
 		}
+		*/
 		//encoding.Delta(in[tmpinpos:tmpinpos+DefaultBlockSize], delta, int32(initoffset.Get()))
+
+		copy(delta, in[tmpinpos:tmpinpos+DefaultBlockSize])
+        for i := 0; i < DefaultBlockSize; i += 4 {
+			tmpoffset := delta[i+3]
+			delta[i+3] -= delta[i+2]
+			delta[i+2] -= delta[i+1]
+			delta[i+1] -= delta[i]
+			delta[i] -= offset
+			offset = tmpoffset
+        }
+
 		initoffset.Set(int(in[tmpinpos+DefaultBlockSize-1]))
 
 		//bestb, bestc, maxb := this.getBestBFromData(in[tmpinpos:tmpinpos+DefaultBlockSize])

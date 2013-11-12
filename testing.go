@@ -12,6 +12,7 @@ import (
 	"io"
 	"bytes"
 	"log"
+	"fmt"
 	"time"
 	"compress/gzip"
 	"compress/lzw"
@@ -59,7 +60,7 @@ func TestCodecPprof(codec Integer, data []int32, sizes []int, t *testing.T) {
 		compressed := Compress(codec, data, k)
 		pprof.StopCPUProfile()
 
-		log.Printf("encoding/TestCodecPprof: Compressed %d integers from %d bytes to %d bytes in %d ns\n", k, k*4, len(compressed)*4, time.Since(now).Nanoseconds())
+		fmt.Printf("encoding/TestCodecPprof: %.2f bpi, %.2f mis compresss, ", float64(len(compressed)*32)/float64(len(data)), (float64(len(data))/(float64(time.Since(now).Nanoseconds())/1000000000.0)/1000000.0))
 
 		f2, e2 := os.Create("cpu.uncompress.prof")
 		if e2 != nil {
@@ -67,12 +68,11 @@ func TestCodecPprof(codec Integer, data []int32, sizes []int, t *testing.T) {
 		}
 		defer f2.Close()
 
-		log.Printf("encoding/TestCodecPprof: Testing decompression\n")
 		now = time.Now()
 		pprof.StartCPUProfile(f2)
 		recovered := Uncompress(codec, compressed, k)
 		pprof.StopCPUProfile()
-		log.Printf("encoding/TestCodecPprof: Uncompressed from %d bytes to %d bytes in %d ns\n", len(compressed)*4, len(recovered)*4, time.Since(now).Nanoseconds())
+		fmt.Printf("%.2f mis uncompresss\n", (float64(len(data))/(float64(time.Since(now).Nanoseconds())/1000000000.0)/1000000.0))
 
 		for i := 0; i < k; i++ {
 			if data[i] != recovered[i] {
