@@ -14,7 +14,7 @@ import (
 
 var (
 	data []int32
-	size int = 10000000
+	size int = 128000000
 )
 
 func init() {
@@ -24,14 +24,18 @@ func init() {
 }
 
 func TestFastPFOR(t *testing.T) {
-	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
-	encoding.TestCodec(New(), data, sizes, t)
+	//sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
+	//log.Printf("Testing DeltaFastPFOR\n")
+	//encoding.TestCodecPprof(NewDeltaFastPFOR(), data, sizes, t)
+	//log.Printf("\n\nTesting FastPFOR\n")
+	//encoding.TestCodec(NewFastPFOR(), data, sizes, t)
+	encoding.TestCodecPprof(NewDeltaFastPFOR(), data, []int{128000000}, t)
 }
 
 func BenchmarkBP32Compress(b *testing.B) {
-	encoding.BenchmarkCompress(New(), data, b)
+	encoding.BenchmarkCompress(NewFastPFOR(), data, b)
 }
 
 func BenchmarkBP32Uncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(New(), data, b)
+	encoding.BenchmarkUncompress(NewFastPFOR(), data, b)
 }

@@ -14,7 +14,7 @@ import (
 
 var (
 	data []int32
-	size int = 10000000
+	size int = 128000000
 )
 
 func init() {

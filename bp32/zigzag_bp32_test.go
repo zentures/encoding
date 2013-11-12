@@ -12,8 +12,9 @@ import (
 )
 
 func TestZigZagBP32(t *testing.T) {
-	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
-	encoding.TestCodec(NewZigZagBP32(), data, sizes, t)
+	//sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
+	//encoding.TestCodec(NewZigZagBP32(), data, sizes, t)
+	encoding.TestCodecPprof(NewZigZagBP32(), data, []int{128000000}, t)
 }
 
 func BenchmarkZigZagBP32Compress(b *testing.B) {

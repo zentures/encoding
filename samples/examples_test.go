@@ -57,7 +57,7 @@ func TestPprofEncoding(t *testing.T) {
 
 func testEncodingWithData(data []int32, t *testing.T) {
 	log.Printf("encoding/testEncodingWithData: Testing comprssion FastPFOR+VariableByte\n")
-	encoding.TestCodec(composition.NewComposition(fastpfor.New(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
+	encoding.TestCodec(composition.NewComposition(fastpfor.NewFastPFOR(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)
 
 	log.Printf("encoding/testEncodingWithData: Testing comprssion ZigZag BP32+VariableByte\n")
 	encoding.TestCodec(composition.NewComposition(bp32.NewZigZagBP32(), variablebyte.NewDeltaVariableByte()), data, []int{len(data)}, t)

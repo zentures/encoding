@@ -45,24 +45,19 @@ func MaxBits(buf []int32) int32 {
 
 func PrintInt32sInBits(buf []int32) {
 	fmt.Println("                           10987654321098765432109876543210")
-	//for i := pos; i < pos + length; i++ {
     for i, v := range buf {
 		fmt.Printf("%4d: %20d %032b\n", i, v, uint32(v))
 	}
 }
 
-func Delta(in, out []int32) {
-	offset := int32(0)
-
+func Delta(in, out []int32, offset int32) {
 	for i, v := range in {
 		out[i] = v - offset
 		offset = v
 	}
 }
 
-func InverseDelta(in, out []int32) {
-	offset := int32(0)
-
+func InverseDelta(in, out []int32, offset int32) {
 	for i, v := range in {
 		out[i] = v + offset
 		offset = out[i]
