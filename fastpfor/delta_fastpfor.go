@@ -145,7 +145,12 @@ func (this *DeltaFastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissi
 	delta := make([]int32, DefaultBlockSize)
 
 	for finalInpos := tmpinpos + int32(thissize) - DefaultBlockSize; tmpinpos <= finalInpos; tmpinpos += DefaultBlockSize {
-		encoding.Delta(in[tmpinpos:tmpinpos+DefaultBlockSize], delta, int32(initoffset.Get()))
+		offset := int32(initoffset.Get())
+		for i, v := range in[tmpinpos:tmpinpos+DefaultBlockSize] {
+			delta[i] = v - offset
+			offset = v
+		}
+		//encoding.Delta(in[tmpinpos:tmpinpos+DefaultBlockSize], delta, int32(initoffset.Get()))
 		initoffset.Set(int(in[tmpinpos+DefaultBlockSize-1]))
 
 		//bestb, bestc, maxb := this.getBestBFromData(in[tmpinpos:tmpinpos+DefaultBlockSize])
@@ -310,7 +315,12 @@ func (this *DeltaFastPFOR) decodePage(in []int32, inpos *encoding.Cursor, out []
 			}
 		}
 
-		encoding.InverseDelta(delta, out[tmpoutpos:tmpoutpos+DefaultBlockSize], int32(initoffset.Get()))
+		//encoding.InverseDelta(delta, out[tmpoutpos:tmpoutpos+DefaultBlockSize], int32(initoffset.Get()))
+		offset := int32(initoffset.Get())
+		for i, v := range delta {
+			out[int(tmpoutpos)+i] = v + offset
+			offset += v
+		}
 		initoffset.Set(int(out[tmpoutpos+DefaultBlockSize-1]))
 
 		run += 1
