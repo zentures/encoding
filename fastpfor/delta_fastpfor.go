@@ -145,34 +145,13 @@ func (this *DeltaFastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissi
 	var delta [DefaultBlockSize]int32
 
 	for finalInpos := tmpinpos + int32(thissize) - DefaultBlockSize; tmpinpos <= finalInpos; tmpinpos += DefaultBlockSize {
+
+        // Calculate the deltas, inlining to gain a bit of performance
 		offset := int32(initoffset.Get())
 		for i, v := range in[tmpinpos:tmpinpos+DefaultBlockSize] {
 			delta[i] = v - offset
 			offset = v
 		}
-		//encoding.Delta(in[tmpinpos:tmpinpos+DefaultBlockSize], delta, int32(initoffset.Get()))
-
-		/*
-		copy(delta, in[tmpinpos:tmpinpos+DefaultBlockSize])
-        for i := 0; i < DefaultBlockSize; i += 4 {
-			tmpoffset := delta[i+3]
-			delta[i+3] -= delta[i+2]
-			delta[i+2] -= delta[i+1]
-			delta[i+1] -= delta[i]
-			delta[i] -= offset
-			offset = tmpoffset
-        }
-        */
-
-		/*
-		for i := 0; i < DefaultBlockSize; i += 4 {
-			delta[i] = in[int(tmpinpos)+i] - offset
-			delta[i+1] = in[int(tmpinpos)+i+1] - in[int(tmpinpos)+i]
-			delta[i+2] = in[int(tmpinpos)+i+2] - in[int(tmpinpos)+i+1]
-			delta[i+3] = in[int(tmpinpos)+i+3] - in[int(tmpinpos)+i+2]
-			offset = in[int(tmpinpos)+i+3]
-		}
-		*/
 
 		initoffset.Set(int(in[tmpinpos+DefaultBlockSize-1]))
 
@@ -338,11 +317,11 @@ func (this *DeltaFastPFOR) decodePage(in []int32, inpos *encoding.Cursor, out []
 			}
 		}
 
-		//encoding.InverseDelta(delta, out[tmpoutpos:tmpoutpos+DefaultBlockSize], int32(initoffset.Get()))
+        // Calculate the original from the deltas, inlining to gain a bit of performance
 		offset := int32(initoffset.Get())
 		for i, v := range delta {
-			out[int(tmpoutpos)+i], offset = v + offset, v + offset
-			//offset += v
+			out[int(tmpoutpos)+i] = v + offset
+			offset += v
 		}
 		initoffset.Set(int(out[tmpoutpos+DefaultBlockSize-1]))
 
