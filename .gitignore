@@ -31,3 +31,8 @@ _testmain.go
 
 Java*
 CPP*
+
+*.pprof
+*.prof
+*.test
+*.out
