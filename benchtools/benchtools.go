@@ -74,26 +74,6 @@ func PprofCodec(codec encoding.Integer, in []int32, sizes []int) {
 	}
 }
 
-func Compress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
-	now := time.Now()
-	out, err = runCompress(codec, in, length)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	return time.Since(now).Nanoseconds(), out, nil
-}
-
-func Uncompress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
-	now := time.Now()
-	out, err = runUncompress(codec, in, length)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	return time.Since(now).Nanoseconds(), out, nil
-}
-
 func PprofCompress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
 	f, e := os.Create("cpu.compress.pprof")
 	if e != nil {
@@ -197,28 +177,28 @@ func RunTestSnappy(data []byte) {
 }
 
 
-func runCompress(codec encoding.Integer, in []int32, length int) (out []int32, err error) {
+func Compress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
 	out = make([]int32, length*2)
 	inpos := cursor.New()
 	outpos := cursor.New()
 
+	now := time.Now()
 	if err = codec.Compress(in, inpos, len(in), out, outpos); err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	out = out[:outpos.Get()]
-	return out, nil
+    return time.Since(now).Nanoseconds(), out[:outpos.Get()], nil
 }
 
-func runUncompress(codec encoding.Integer, in []int32, length int) (out []int32, err error) {
+func Uncompress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
 	out = make([]int32, length)
 	inpos := cursor.New()
 	outpos := cursor.New()
 
+	now := time.Now()
 	if err = codec.Uncompress(in, inpos, len(in), out, outpos); err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	out = out[:outpos.Get()]
-	return out, nil
+    return time.Since(now).Nanoseconds(), out[:outpos.Get()], nil
 }
