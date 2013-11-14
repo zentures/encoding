@@ -337,6 +337,7 @@ func FastPackWithoutMask(in []int32, inpos int, out []int32, outpos int, bit int
 
 	return nil
 }
+
 func fastpackwithoutmask1(in []int32, inpos int, out []int32, outpos int) {
 	out[0+outpos] = in[0+inpos] |
 		((in[1+inpos]) << 1) |
@@ -6840,6 +6841,41 @@ func fastunpack0(in []int32, inpos int, out []int32, outpos int) {
 	for i := outpos; i < outpos + 32; i++ {
 		out[i] = 0
 	}
+
+    /*
+    out[outpos+0] = 0
+    out[outpos+1] = 0
+    out[outpos+2] = 0
+    out[outpos+3] = 0
+    out[outpos+4] = 0
+    out[outpos+5] = 0
+    out[outpos+6] = 0
+    out[outpos+7] = 0
+    out[outpos+8] = 0
+    out[outpos+9] = 0
+    out[outpos+10] = 0
+    out[outpos+11] = 0
+    out[outpos+12] = 0
+    out[outpos+13] = 0
+    out[outpos+14] = 0
+    out[outpos+15] = 0
+    out[outpos+16] = 0
+    out[outpos+17] = 0
+    out[outpos+18] = 0
+    out[outpos+19] = 0
+    out[outpos+20] = 0
+    out[outpos+21] = 0
+    out[outpos+22] = 0
+    out[outpos+23] = 0
+    out[outpos+24] = 0
+    out[outpos+25] = 0
+    out[outpos+26] = 0
+    out[outpos+27] = 0
+    out[outpos+28] = 0
+    out[outpos+29] = 0
+    out[outpos+30] = 0
+    out[outpos+31] = 0
+    */
 }
 
 func fastpack0(in []int32, inpos int, out []int32, outpos int) {

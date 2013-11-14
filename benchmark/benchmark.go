@@ -271,13 +271,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := pprofCodecs(codecs, data, false); err != nil {
+	if err := testCodecs(codecs, data, false); err != nil {
 		log.Fatal(err)
 	}
-	if err := pprofCodecs(codecs, data, false); err != nil {
+	if err := testCodecs(codecs, data, false); err != nil {
 		log.Fatal(err)
 	}
-	if err := pprofCodecs(codecs, data, true); err != nil {
+	if err := testCodecs(codecs, data, true); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -117,12 +117,15 @@ func (this *FastPFOR) getBestBFromData(in []int32) (bestb int32, bestc int32, ma
 	// Get the count of all the leading bit positions for the slice
 	// Mainly to figure out what's the best (most popular) bit position
 	for _, v := range in {
-		l := encoding.LeadingBitPosition(uint32(v))
-		this.freqs[l] += 1
-		if l > bestb {
-			bestb = l
-		}
+		this.freqs[encoding.LeadingBitPosition(uint32(v))]++
 	}
+    //encoding.FastLeadingBitFrequency128(in, this.freqs)
+
+    bestb = 32
+
+    for this.freqs[bestb] == 0 {
+        bestb--
+    }
 
 	maxb = bestb
 	bestCost := bestb*DefaultBlockSize
@@ -338,6 +341,7 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 			out[int(tmpoutpos)+i] = v + offset
 			offset += v
 		}
+
 		initoffset.Set(int(out[tmpoutpos+DefaultBlockSize-1]))
 
 		run += 1

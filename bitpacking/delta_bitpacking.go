@@ -240,9 +240,39 @@ func DeltaUnpack(initoffset int32, in []int32, inpos int, out []int32, outpos in
 }
 
 func deltaunpack0(initoffset int32, in []int32, inpos int, out []int32, outpos int) {
-	for i := outpos; i < outpos + 32; i++ {
-		out[i] = initoffset
-	}
+    // Unrolling the loop to get best performance
+    out[outpos+0] = initoffset
+    out[outpos+1] = initoffset
+    out[outpos+2] = initoffset
+    out[outpos+3] = initoffset
+    out[outpos+4] = initoffset
+    out[outpos+5] = initoffset
+    out[outpos+6] = initoffset
+    out[outpos+7] = initoffset
+    out[outpos+8] = initoffset
+    out[outpos+9] = initoffset
+    out[outpos+10] = initoffset
+    out[outpos+11] = initoffset
+    out[outpos+12] = initoffset
+    out[outpos+13] = initoffset
+    out[outpos+14] = initoffset
+    out[outpos+15] = initoffset
+    out[outpos+16] = initoffset
+    out[outpos+17] = initoffset
+    out[outpos+18] = initoffset
+    out[outpos+19] = initoffset
+    out[outpos+20] = initoffset
+    out[outpos+21] = initoffset
+    out[outpos+22] = initoffset
+    out[outpos+23] = initoffset
+    out[outpos+24] = initoffset
+    out[outpos+25] = initoffset
+    out[outpos+26] = initoffset
+    out[outpos+27] = initoffset
+    out[outpos+28] = initoffset
+    out[outpos+29] = initoffset
+    out[outpos+30] = initoffset
+    out[outpos+31] = initoffset
 }
 
 func deltapack0(initoffset int32, in []int32, inpos int, out []int32, outpos int) {
