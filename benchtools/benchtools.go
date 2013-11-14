@@ -75,22 +75,22 @@ func PprofCodec(codec encoding.Integer, in []int32, sizes []int) {
 }
 
 func Compress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
-	return runCompress(codec, in, length, false)
+	return RunCompress(codec, in, length, false)
 }
 
 func Uncompress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
-	return runUncompress(codec, in, length, false)
+	return RunUncompress(codec, in, length, false)
 }
 
 func PprofCompress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
-	return runCompress(codec, in, length, true)
+	return RunCompress(codec, in, length, true)
 }
 
 func PprofUncompress(codec encoding.Integer, in []int32, length int) (duration int64, out []int32, err error) {
-	return runUncompress(codec, in, length, true)
+	return RunUncompress(codec, in, length, true)
 }
 
-func runCompress(codec encoding.Integer, in []int32, length int, prof bool) (duration int64, out []int32, err error) {
+func RunCompress(codec encoding.Integer, in []int32, length int, prof bool) (duration int64, out []int32, err error) {
 	out = make([]int32, length*2)
 	inpos := cursor.New()
 	outpos := cursor.New()
@@ -118,7 +118,7 @@ func runCompress(codec encoding.Integer, in []int32, length int, prof bool) (dur
     return since, out[:outpos.Get()], nil
 }
 
-func runUncompress(codec encoding.Integer, in []int32, length int, prof bool) (duration int64, out []int32, err error) {
+func RunUncompress(codec encoding.Integer, in []int32, length int, prof bool) (duration int64, out []int32, err error) {
 	out = make([]int32, length)
 	inpos := cursor.New()
 	outpos := cursor.New()

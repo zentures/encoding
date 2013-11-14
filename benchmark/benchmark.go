@@ -34,7 +34,7 @@ type paramList []string
 
 var (
 	filesParam, dirsParam, codecsParam paramList
-	verboseParam bool
+	pprofParam bool
 	files []string
 )
 
@@ -51,7 +51,7 @@ func (this *paramList) Set(value string) error {
 }
 
 func init() {
-	flag.BoolVar(&verboseParam, "verbose", false, "Print result for individual files.")
+	flag.BoolVar(&pprofParam, "pprof", false, "Print result for individual files.")
 	flag.Var(&filesParam, "file", "The file containing one integer per line to encode. There can be multiple of this, or comma separated list.")
 	flag.Var(&dirsParam, "dir", "The directory containing a list of files with one integer per line. There can be multiple of this, or comma separated list.")
 	flag.Var(&codecsParam, "codec", "The codec to use: bp32, fastpfor, variablebyte, deltabp32, deltafastpfor, deltavariablebyte, zigzagbp32. There can be multiple of this, or comma separated list.")
@@ -202,47 +202,17 @@ func testCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool)
 		for i, in := range data {
 			k := len(in)
 
-			dur, out, err := benchtools.Compress(codec, in, k)
+			dur, out, err := benchtools.RunCompress(codec, in, k, pprofParam)
 			if err != nil {
 				return err
 			}
 
-			dur2, out2, err2 := benchtools.Uncompress(codec, out, k)
+			dur2, out2, err2 := benchtools.RunUncompress(codec, out, k, pprofParam)
 			if err2 != nil {
 				return err2
 			}
 
-			if output && verboseParam {
-				fmt.Printf("% 20s % 20s: %5.2f %5.2f %5.2f\n", files[i], name, float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
-			}
-
-			for i := 0; i < k; i++ {
-				if in[i] != out2[i] {
-					return fmt.Errorf("benchmark/testCodecs: Problem recovering. index = %d, in = %d, recovered = %d, original length = %d, recovered length = %d\n", i, in[i], out2[i], k, len(out2))
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func pprofCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool) error {
-	for name, codec := range codecs {
-		for i, in := range data {
-			k := len(in)
-
-			dur, out, err := benchtools.PprofCompress(codec, in, k)
-			if err != nil {
-				return err
-			}
-
-			dur2, out2, err2 := benchtools.PprofUncompress(codec, out, k)
-			if err2 != nil {
-				return err2
-			}
-
-			if output && verboseParam {
+			if output {
 				fmt.Printf("% 20s % 20s: %5.2f %5.2f %5.2f\n", files[i], name, float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
 			}
 
