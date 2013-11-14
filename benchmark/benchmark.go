@@ -227,6 +227,36 @@ func testCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool)
 	return nil
 }
 
+func pprofCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool) error {
+	for name, codec := range codecs {
+		for i, in := range data {
+			k := len(in)
+
+			dur, out, err := benchtools.PprofCompress(codec, in, k)
+			if err != nil {
+				return err
+			}
+
+			dur2, out2, err2 := benchtools.PprofUncompress(codec, out, k)
+			if err2 != nil {
+				return err2
+			}
+
+			if output && verboseParam {
+				fmt.Printf("% 20s % 20s: %5.2f %5.2f %5.2f\n", files[i], name, float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
+			}
+
+			for i := 0; i < k; i++ {
+				if in[i] != out2[i] {
+					return fmt.Errorf("benchmark/testCodecs: Problem recovering. index = %d, in = %d, recovered = %d, original length = %d, recovered length = %d\n", i, in[i], out2[i], k, len(out2))
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	flag.Parse()
 	files = getListOfFiles()
@@ -241,7 +271,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := testCodecs(codecs, data, true); err != nil {
+	if err := pprofCodecs(codecs, data, false); err != nil {
+		log.Fatal(err)
+	}
+	if err := pprofCodecs(codecs, data, false); err != nil {
+		log.Fatal(err)
+	}
+	if err := pprofCodecs(codecs, data, true); err != nil {
 		log.Fatal(err)
 	}
 }
