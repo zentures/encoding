@@ -9,29 +9,22 @@ package variablebyte
 import (
 	"testing"
 	"log"
-	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/generators"
+	"github.com/reducedb/encoding/benchtools"
 )
 
 var (
 	data []int32
-	size int = 10000000
+	size int = 12800000
 )
 
 func init() {
-	log.Printf("variablebyte_test/init: generating %d uint32s\n", size)
-	data = encoding.GenerateClustered(size, size*2)
-	log.Printf("variablebyte_test/init: generated %d integers for test", size)
+	log.Printf("variablebyte/init: generating %d int32s\n", size)
+	data = generators.GenerateClustered(size, size*2)
+	log.Printf("variablebyte/init: generated %d integers for test", size)
 }
 
-func TestVariableByte(t *testing.T) {
-	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
-	encoding.TestCodec(NewVariableByte(), data, sizes, t)
-}
-
-func BenchmarkVariableByteCompress(b *testing.B) {
-	encoding.BenchmarkCompress(NewVariableByte(), data, b)
-}
-
-func BenchmarkVariableByteUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(NewVariableByte(), data, b)
+func TestCodec(t *testing.T) {
+	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
+	benchtools.TestCodec(New(), data, sizes)
 }

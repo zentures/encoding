@@ -10,6 +10,7 @@ import (
 	"math"
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/buffers"
 	"github.com/reducedb/encoding/bitpacking"
 )
@@ -31,7 +32,7 @@ func init() {
 }
 
 type FastPFOR struct {
-	dataToBePacked [32][]int32
+	dataToBePacked [33][]int32
 	byteContainer *buffers.ByteBuffer
 	pageSize int32
 
@@ -42,7 +43,7 @@ type FastPFOR struct {
 
 var _ encoding.Integer = (*FastPFOR)(nil)
 
-func NewFastPFOR() encoding.Integer {
+func New() encoding.Integer {
 	f := &FastPFOR{
 		pageSize: DefaultPageSize,
 		byteContainer: buffers.NewByteBuffer(3*DefaultPageSize/DefaultBlockSize + DefaultPageSize),
@@ -50,14 +51,14 @@ func NewFastPFOR() encoding.Integer {
 		freqs: make([]int32, 33),
 	}
 
-	for i := 0; i < 32; i++ {
+	for i := 1; i < 33; i++ {
 		f.dataToBePacked[i] = make([]int32, DefaultPageSize/32*4)
 	}
 
 	return f
 }
 
-func (this *FastPFOR) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *FastPFOR) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	inlength = encoding.FloorBy(inlength, DefaultBlockSize)
 
 	//log.Printf("fastpfor/Compress: inlength = %d, pageSize = %d\n", inlength, this.pageSize)
@@ -90,7 +91,7 @@ func (this *FastPFOR) Compress(in []int32, inpos *encoding.Cursor, inlength int,
 	return nil
 }
 
-func (this *FastPFOR) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *FastPFOR) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("fastpfor/Uncompress: inlength = 0. No work done.")
 	}
@@ -159,7 +160,7 @@ func (this *FastPFOR) getBestBFromData(in []int32) (bestb int32, bestc int32, ma
 	return
 }
 
-func (this *FastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissize int, out []int32, outpos *encoding.Cursor) error {
+func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int, out []int32, outpos *cursor.Cursor) error {
 	//log.Printf("fastpfor/encodePage: encoding %d integers\n", thissize)
 	headerpos := int32(outpos.Get())
 	outpos.Increment()
@@ -183,6 +184,7 @@ func (this *FastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissize in
 		if bestc > 0 {
 			this.byteContainer.Put(byte(maxb))
 			index := maxb - bestb
+			//log.Printf("maxb = %d, bestb = %d, bestc = %d, index = %d\n", maxb, bestb, bestc, index)
 
 			if int(this.dataPointers[index] + bestc) >= len(this.dataToBePacked[index]) {
 				newSize := int(2*(this.dataPointers[index] + bestc))
@@ -246,7 +248,7 @@ func (this *FastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissize in
 	tmpoutpos += 1
 	//log.Printf("fastpfor/encodePage: bitmap = %d, tmpoutpos = %d\n", bitmap, tmpoutpos)
 
-	for k := 1; k <= 31; k++ {
+	for k := 1; k < 33; k++ {
 		v := this.dataPointers[k]
 		if v != 0 {
 			out[tmpoutpos] = v // size
@@ -266,7 +268,7 @@ func (this *FastPFOR) encodePage(in []int32, inpos *encoding.Cursor, thissize in
 	return nil
 }
 
-func (this *FastPFOR) decodePage(in []int32, inpos *encoding.Cursor, out []int32, outpos *encoding.Cursor, thissize int) error {
+func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, outpos *cursor.Cursor, thissize int) error {
 	//log.Printf("fastpfor/decodePage: in[%d:%d] = %v\n", inpos.Get(), inpos.Get()+thissize, in[inpos.Get():inpos.Get()+thissize])
 	//log.Printf("fastpfor/decodePage: decoding in[%d:%d], this size = %d\n", inpos.Get(), inpos.Get()+thissize, thissize)
 	//encoding.PrintInt32sInBits(in[:inpos.Get()+thissize])
@@ -290,7 +292,7 @@ func (this *FastPFOR) decodePage(in []int32, inpos *encoding.Cursor, out []int32
 	bitmap := in[inexcept]
 	inexcept += 1
 
-	for k := int32(1); k <= 31; k++ {
+	for k := int32(1); k < 33; k++ {
 		if bitmap & (1 << uint32(k - 1)) != 0 {
 			size := in[inexcept]
 			inexcept += 1

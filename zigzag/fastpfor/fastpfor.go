@@ -162,16 +162,17 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 	var delta [DefaultBlockSize]int32
 
 	for finalInpos := tmpinpos + int32(thissize) - DefaultBlockSize; tmpinpos <= finalInpos; tmpinpos += DefaultBlockSize {
-
         // Calculate the deltas, inlining to gain a bit of performance
 		offset := int32(initoffset.Get())
 		for i, v := range in[tmpinpos:tmpinpos+DefaultBlockSize] {
-			delta[i] = v - offset
+			n := v - offset
+			delta[i] = (n << 1) ^ (n >> 31)
 			offset = v
 		}
 
 		initoffset.Set(int(in[tmpinpos+DefaultBlockSize-1]))
 
+		//bestb, bestc, maxb := this.getBestBFromData(in[tmpinpos:tmpinpos+DefaultBlockSize])
 		bestb, bestc, maxb := this.getBestBFromData(delta[:])
 		tmpbestb := bestb
 		this.byteContainer.Put(byte(bestb))
@@ -180,6 +181,7 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 		if bestc > 0 {
 			this.byteContainer.Put(byte(maxb))
 			index := maxb - bestb
+
 			if int(this.dataPointers[index] + bestc) >= len(this.dataToBePacked[index]) {
 				newSize := int(2*(this.dataPointers[index] + bestc))
 
@@ -335,8 +337,9 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
         // Calculate the original from the deltas, inlining to gain a bit of performance
 		offset := int32(initoffset.Get())
 		for i, v := range delta {
-			out[int(tmpoutpos)+i] = v + offset
-			offset += v
+			n := int32(uint32(v) >> 1) ^ ((v << 31) >> 31)
+			out[int(tmpoutpos)+i] = n + offset
+			offset += n
 		}
 		initoffset.Set(int(out[tmpoutpos+DefaultBlockSize-1]))
 

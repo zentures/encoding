@@ -9,20 +9,26 @@ package bp32
 import (
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/bitpacking"
 )
 
-type ZigZagBP32 struct {
+const (
+	DefaultBlockSize = 128
+	DefaultPageSize = 65536
+)
+
+type BP32 struct {
 
 }
 
-var _ encoding.Integer = (*ZigZagBP32)(nil)
+var _ encoding.Integer = (*BP32)(nil)
 
-func NewZigZagBP32() encoding.Integer {
-	return &ZigZagBP32{}
+func New() encoding.Integer {
+	return &BP32{}
 }
 
-func (this *ZigZagBP32) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *BP32) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	//log.Printf("zigzag_bp32/Compress: before inlength = %d\n", inlength)
 
 	inlength = encoding.FloorBy(inlength, DefaultBlockSize)
@@ -87,7 +93,7 @@ func (this *ZigZagBP32) Compress(in []int32, inpos *encoding.Cursor, inlength in
 	return nil
 }
 
-func (this *ZigZagBP32) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *BP32) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("zigzag_bp32/Uncompress: Length is 0. No work done.")
 	}

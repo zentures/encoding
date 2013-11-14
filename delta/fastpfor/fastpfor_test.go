@@ -4,7 +4,7 @@
  *
  */
 
-package bp32
+package fastpfor
 
 import (
 	"testing"

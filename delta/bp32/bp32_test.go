@@ -8,18 +8,23 @@ package bp32
 
 import (
 	"testing"
-	"github.com/reducedb/encoding"
+	"log"
+	"github.com/reducedb/encoding/generators"
+	"github.com/reducedb/encoding/benchtools"
 )
 
-func TestDeltaBP32(t *testing.T) {
+var (
+	data []int32
+	size int = 12800000
+)
+
+func init() {
+	log.Printf("bp32/init: generating %d int32s\n", size)
+	data = generators.GenerateClustered(size, size*2)
+	log.Printf("bp32/init: generated %d integers for test", size)
+}
+
+func TestCodec(t *testing.T) {
 	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
-	encoding.TestCodec(NewDeltaBP32(), data, sizes, t)
-}
-
-func BenchmarkDeltaBP32Compress(b *testing.B) {
-	encoding.BenchmarkCompress(NewDeltaBP32(), data, b)
-}
-
-func BenchmarkDeltaBP32Uncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(NewDeltaBP32(), data, b)
+	benchtools.TestCodec(New(), data, sizes)
 }

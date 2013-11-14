@@ -8,19 +8,23 @@ package bp32
 
 import (
 	"testing"
-	"github.com/reducedb/encoding"
+	"log"
+	"github.com/reducedb/encoding/generators"
+	"github.com/reducedb/encoding/benchtools"
 )
 
-func TestZigZagBP32(t *testing.T) {
-	//sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
-	//encoding.TestCodec(NewZigZagBP32(), data, sizes, t)
-	encoding.TestCodecPprof(NewZigZagBP32(), data, []int{128000000}, t)
+var (
+	data []int32
+	size int = 12800000
+)
+
+func init() {
+	log.Printf("bp32/init: generating %d int32s\n", size)
+	data = generators.GenerateClustered(size, size*2)
+	log.Printf("bp32/init: generated %d integers for test", size)
 }
 
-func BenchmarkZigZagBP32Compress(b *testing.B) {
-	encoding.BenchmarkCompress(NewZigZagBP32(), data, b)
-}
-
-func BenchmarkZigZagBP32Uncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(NewZigZagBP32(), data, b)
+func TestCodec(t *testing.T) {
+	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
+	benchtools.TestCodec(New(), data, sizes)
 }

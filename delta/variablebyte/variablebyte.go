@@ -9,20 +9,21 @@ package variablebyte
 import (
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/buffers"
 )
 
-type DeltaVariableByte struct {
+type VariableByte struct {
 
 }
 
-var _ encoding.Integer = (*DeltaVariableByte)(nil)
+var _ encoding.Integer = (*VariableByte)(nil)
 
-func NewDeltaVariableByte() encoding.Integer {
-	return &DeltaVariableByte{}
+func New() encoding.Integer {
+	return &VariableByte{}
 }
 
-func (this *DeltaVariableByte) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *VariableByte) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("variablebyte/Compress: inlength = 0. No work done.")
 	}
@@ -65,7 +66,7 @@ func (this *DeltaVariableByte) Compress(in []int32, inpos *encoding.Cursor, inle
 	return nil
 }
 
-func (this *DeltaVariableByte) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *VariableByte) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("variablebyte/Uncompress: inlength = 0. No work done.")
 	}

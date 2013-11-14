@@ -10,8 +10,12 @@ import (
 	"testing"
 	"log"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/generators"
+	"github.com/reducedb/encoding/benchtools"
 	"github.com/reducedb/encoding/bp32"
 	"github.com/reducedb/encoding/variablebyte"
+	dbp32 "github.com/reducedb/encoding/delta/bp32"
+	dvb "github.com/reducedb/encoding/delta/variablebyte"
 )
 
 var (
@@ -22,32 +26,16 @@ var (
 
 func init() {
 	log.Printf("composition_test/init: generating %d uint32s\n", size)
-	data = encoding.GenerateClustered(size, size*2)
+	data = generators.GenerateClustered(size, size*2)
 	log.Printf("composition_test/init: generated %d integers for test", size)
 }
 
 func TestDeltaBP32andDeltaVariableByte(t *testing.T) {
 	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
-	encoding.TestCodec(NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, sizes, t)
+	benchtools.TestCodec(New(dbp32.New(), dvb.New()), data, sizes)
 }
 
 func TestBP32andVariableByte(t *testing.T) {
 	sizes := []int{100, 100*10, 100*100, 100*1000, 100*10000}
-	encoding.TestCodec(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, sizes, t)
-}
-
-func BenchmarkDeltaBP32andDeltaVariableByteCompress(b *testing.B) {
-	encoding.BenchmarkCompress(NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, b)
-}
-
-func BenchmarkDeltaBP32andDeltaVariableByteUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(NewComposition(bp32.NewDeltaBP32(), variablebyte.NewDeltaVariableByte()), data, b)
-}
-
-func BenchmarkBP32andVariableByteCompress(b *testing.B) {
-	encoding.BenchmarkCompress(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, b)
-}
-
-func BenchmarkBP32andVariableByteUncompress(b *testing.B) {
-	encoding.BenchmarkUncompress(NewComposition(bp32.NewBP32(), variablebyte.NewVariableByte()), data, b)
+	benchtools.TestCodec(New(bp32.New(), variablebyte.New()), data, sizes)
 }

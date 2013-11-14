@@ -9,20 +9,26 @@ package bp32
 import (
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/bitpacking"
 )
 
-type DeltaBP32 struct {
+const (
+	DefaultBlockSize = 128
+	DefaultPageSize = 65536
+)
+
+type BP32 struct {
 
 }
 
-var _ encoding.Integer = (*DeltaBP32)(nil)
+var _ encoding.Integer = (*BP32)(nil)
 
-func NewDeltaBP32() encoding.Integer {
-	return &DeltaBP32{}
+func New() encoding.Integer {
+	return &BP32{}
 }
 
-func (this *DeltaBP32) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *BP32) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	//log.Printf("bp32/Compress: before inlength = %d\n", inlength)
 
 	inlength = encoding.FloorBy(inlength, DefaultBlockSize)
@@ -86,7 +92,7 @@ func (this *DeltaBP32) Compress(in []int32, inpos *encoding.Cursor, inlength int
 	return nil
 }
 
-func (this *DeltaBP32) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *BP32) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("BP32/Uncompress: Length is 0. No work done.")
 	}

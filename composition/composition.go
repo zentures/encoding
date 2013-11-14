@@ -9,6 +9,7 @@ package composition
 import (
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 )
 
 type Composition struct {
@@ -18,14 +19,14 @@ type Composition struct {
 
 var _ encoding.Integer = (*Composition)(nil)
 
-func NewComposition(f1 encoding.Integer, f2 encoding.Integer) encoding.Integer {
+func New(f1 encoding.Integer, f2 encoding.Integer) encoding.Integer {
 	return &Composition{
 		f1: f1,
 		f2: f2,
 	}
 }
 
-func (this *Composition) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *Composition) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("composition/Compress: inlength = 0. No work done.")
 	}
@@ -45,7 +46,7 @@ func (this *Composition) Compress(in []int32, inpos *encoding.Cursor, inlength i
 	return nil
 }
 
-func (this *Composition) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *Composition) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("composition/Uncompress: inlength = 0. No work done.")
 	}

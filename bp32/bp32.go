@@ -9,6 +9,7 @@ package bp32
 import (
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/bitpacking"
 )
 
@@ -23,11 +24,11 @@ type BP32 struct {
 
 var _ encoding.Integer = (*BP32)(nil)
 
-func NewBP32() encoding.Integer {
+func New() encoding.Integer {
 	return &BP32{}
 }
 
-func (this *BP32) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *BP32) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	//log.Printf("bp32/Compress: before inlength = %d\n", inlength)
 
 	inlength = encoding.FloorBy(inlength, DefaultBlockSize)
@@ -85,7 +86,7 @@ func (this *BP32) Compress(in []int32, inpos *encoding.Cursor, inlength int, out
 	return nil
 }
 
-func (this *BP32) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *BP32) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("BP32/Uncompress: Length is 0. No work done.")
 	}

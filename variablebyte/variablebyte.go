@@ -9,6 +9,7 @@ package variablebyte
 import (
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/buffers"
 )
 
@@ -18,11 +19,11 @@ type VariableByte struct {
 
 var _ encoding.Integer = (*VariableByte)(nil)
 
-func NewVariableByte() encoding.Integer {
+func New() encoding.Integer {
 	return &VariableByte{}
 }
 
-func (this *VariableByte) Compress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *VariableByte) Compress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("VariableByte/Compress: inlength = 0. No work done.")
 	}
@@ -63,7 +64,7 @@ func (this *VariableByte) Compress(in []int32, inpos *encoding.Cursor, inlength 
 	return nil
 }
 
-func (this *VariableByte) Uncompress(in []int32, inpos *encoding.Cursor, inlength int, out []int32, outpos *encoding.Cursor) error {
+func (this *VariableByte) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out []int32, outpos *cursor.Cursor) error {
 	if inlength == 0 {
 		return errors.New("VariableByte/Uncompress: inlength = 0. No work done.")
 	}

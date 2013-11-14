@@ -4,7 +4,7 @@
  *
  */
 
-package encoding
+package generators
 
 import (
 	"sort"

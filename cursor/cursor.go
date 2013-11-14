@@ -4,13 +4,13 @@
  *
  */
 
-package encoding
+package cursor
 
 type Cursor struct {
 	value int
 }
 
-func NewCursor() *Cursor {
+func New() *Cursor {
 	return &Cursor{
 		value: 0,
 	}
