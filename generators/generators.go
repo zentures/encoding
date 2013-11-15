@@ -7,12 +7,12 @@
 package generators
 
 import (
-	"sort"
-	"errors"
-	"encoding/binary"
-	"math/rand"
 	"bytes"
+	"encoding/binary"
+	"errors"
 	"github.com/willf/bitset"
+	"math/rand"
+	"sort"
 )
 
 const (
@@ -42,7 +42,7 @@ func GenerateClusteredInBytes(N, max int) *bytes.Buffer {
 
 func GenerateUniform(N, max int) []int32 {
 	if N*2 > max {
-		return negate(GenerateUniform(max - N, max), max)
+		return negate(GenerateUniform(max-N, max), max)
 	}
 
 	if 2048*N > max {
@@ -61,14 +61,14 @@ func GenerateClustered(N, max int) []int32 {
 	return ans
 }
 
-func fillUniform(ans[]int32, offset, length, min, max int) {
-	v := GenerateUniform(length, max - min)
+func fillUniform(ans []int32, offset, length, min, max int) {
+	v := GenerateUniform(length, max-min)
 	for k := 0; k < len(v); k++ {
-		ans[k + offset] = int32(min) + v[k]
+		ans[k+offset] = int32(min) + v[k]
 	}
 }
 
-func fillClustered(ans[]int32, offset, length, min, max int) {
+func fillClustered(ans []int32, offset, length, min, max int) {
 	btwn := max - min
 	if btwn == length || length <= 10 {
 		fillUniform(ans, offset, length, min, max)
@@ -76,33 +76,33 @@ func fillClustered(ans[]int32, offset, length, min, max int) {
 	}
 
 	r := rand.New(rand.NewSource(c1))
-	cut := length/2
-	if btwn - length - 1 > 0 {
+	cut := length / 2
+	if btwn-length-1 > 0 {
 		cut += int(r.Int31n(int32(btwn - length - 1)))
 	}
 
 	p := r.Float64()
 	if p < 0.25 {
-		fillUniform(ans, offset, length/2, min, min + cut)
-		fillClustered(ans, offset + length/2, length - length/2, min + cut, max)
+		fillUniform(ans, offset, length/2, min, min+cut)
+		fillClustered(ans, offset+length/2, length-length/2, min+cut, max)
 	} else if p < 0.5 {
-		fillClustered(ans, offset, length/2, min, min + cut)
-		fillUniform(ans, offset + length/2, length - length/2, min + cut, max)
+		fillClustered(ans, offset, length/2, min, min+cut)
+		fillUniform(ans, offset+length/2, length-length/2, min+cut, max)
 	} else {
-		fillClustered(ans, offset, length/2, min, min + cut)
-		fillClustered(ans, offset + length/2, length - length/2, min + cut, max)
+		fillClustered(ans, offset, length/2, min, min+cut)
+		fillClustered(ans, offset+length/2, length-length/2, min+cut, max)
 	}
 }
 
 func negate(x []int32, max int) []int32 {
-	ans := make([]int32, max - len(x))
+	ans := make([]int32, max-len(x))
 
 	var i, c int32
 
 	for j := 0; j < len(x); j++ {
 		v := x[j]
 		for ; i < v; i++ {
-			ans[c] = i;
+			ans[c] = i
 			c += 1
 		}
 		i += 1

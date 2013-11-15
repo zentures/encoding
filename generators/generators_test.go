@@ -7,8 +7,8 @@
 package generators
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestGenerateClustered(t *testing.T) {

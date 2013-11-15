@@ -7,12 +7,12 @@
 package fastpfor
 
 import (
-	"math"
 	"errors"
 	"github.com/reducedb/encoding"
+	"github.com/reducedb/encoding/bitpacking"
 	"github.com/reducedb/encoding/buffers"
 	"github.com/reducedb/encoding/cursor"
-	"github.com/reducedb/encoding/bitpacking"
+	"math"
 )
 
 const (
@@ -23,7 +23,7 @@ const (
 
 var (
 	zeroDataPointers []int32
-	zeroFreqs []int32
+	zeroFreqs        []int32
 )
 
 func init() {
@@ -33,22 +33,22 @@ func init() {
 
 type FastPFOR struct {
 	dataToBePacked [33][]int32
-	byteContainer *buffers.ByteBuffer
-	pageSize int32
+	byteContainer  *buffers.ByteBuffer
+	pageSize       int32
 
 	// Working area
-	dataPointers        []int32
-	freqs               []int32
+	dataPointers []int32
+	freqs        []int32
 }
 
 var _ encoding.Integer = (*FastPFOR)(nil)
 
 func New() encoding.Integer {
 	f := &FastPFOR{
-		pageSize: DefaultPageSize,
+		pageSize:      DefaultPageSize,
 		byteContainer: buffers.NewByteBuffer(3*DefaultPageSize/DefaultBlockSize + DefaultPageSize),
-		dataPointers: make([]int32, 33),
-		freqs: make([]int32, 33),
+		dataPointers:  make([]int32, 33),
+		freqs:         make([]int32, 33),
 	}
 
 	for i := 1; i < 33; i++ {
@@ -76,7 +76,7 @@ func (this *FastPFOR) Compress(in []int32, inpos *cursor.Cursor, inlength int, o
 	finalInpos := inpos.Get() + inlength
 
 	for inpos.Get() != finalInpos {
-		thissize := int(math.Min(float64(this.pageSize), float64(finalInpos - inpos.Get())))
+		thissize := int(math.Min(float64(this.pageSize), float64(finalInpos-inpos.Get())))
 
 		if err := this.encodePage(in, inpos, thissize, out, outpos, initoffset); err != nil {
 			return errors.New("fastpfor/Compress: " + err.Error())
@@ -100,7 +100,7 @@ func (this *FastPFOR) Uncompress(in []int32, inpos *cursor.Cursor, inlength int,
 
 	finalout := outpos.Get() + int(mynvalue)
 	for outpos.Get() != finalout {
-		thissize := int(math.Min(float64(this.pageSize), float64(finalout - outpos.Get())))
+		thissize := int(math.Min(float64(this.pageSize), float64(finalout-outpos.Get())))
 
 		if err := this.decodePage(in, inpos, out, outpos, thissize, initoffset); err != nil {
 			return errors.New("fastpfor/Uncompress: " + err.Error())
@@ -119,16 +119,16 @@ func (this *FastPFOR) getBestBFromData(in []int32) (bestb int32, bestc int32, ma
 	for _, v := range in {
 		this.freqs[encoding.LeadingBitPosition(uint32(v))]++
 	}
-    //encoding.FastLeadingBitFrequency128(in, this.freqs)
+	//encoding.FastLeadingBitFrequency128(in, this.freqs)
 
-    bestb = 32
+	bestb = 32
 
-    for this.freqs[bestb] == 0 {
-        bestb--
-    }
+	for this.freqs[bestb] == 0 {
+		bestb--
+	}
 
 	maxb = bestb
-	bestCost := bestb*DefaultBlockSize
+	bestCost := bestb * DefaultBlockSize
 	var cexcept int32
 	bestc = cexcept
 
@@ -140,7 +140,7 @@ func (this *FastPFOR) getBestBFromData(in []int32) (bestb int32, bestc int32, ma
 		}
 
 		// the extra 8 is the cost of storing maxbits
-		thisCost := cexcept*OverheadOfEachExcept + cexcept*(maxb - b) + b*DefaultBlockSize + 8
+		thisCost := cexcept*OverheadOfEachExcept + cexcept*(maxb-b) + b*DefaultBlockSize + 8
 
 		if thisCost < bestCost {
 			bestCost = thisCost
@@ -166,9 +166,9 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 
 	for finalInpos := tmpinpos + int32(thissize) - DefaultBlockSize; tmpinpos <= finalInpos; tmpinpos += DefaultBlockSize {
 
-        // Calculate the deltas, inlining to gain a bit of performance
+		// Calculate the deltas, inlining to gain a bit of performance
 		offset := int32(initoffset.Get())
-		for i, v := range in[tmpinpos:tmpinpos+DefaultBlockSize] {
+		for i, v := range in[tmpinpos : tmpinpos+DefaultBlockSize] {
 			delta[i] = v - offset
 			offset = v
 		}
@@ -183,8 +183,8 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 		if bestc > 0 {
 			this.byteContainer.Put(byte(maxb))
 			index := maxb - bestb
-			if int(this.dataPointers[index] + bestc) >= len(this.dataToBePacked[index]) {
-				newSize := int(2*(this.dataPointers[index] + bestc))
+			if int(this.dataPointers[index]+bestc) >= len(this.dataToBePacked[index]) {
+				newSize := int(2 * (this.dataPointers[index] + bestc))
 
 				// make sure it is a multiple of 32.
 				// there might be a better way to do this
@@ -195,7 +195,7 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 			}
 
 			for k := int32(0); k < DefaultBlockSize; k++ {
-				if uint32(delta[k]) >> uint(bestb) != 0 {
+				if uint32(delta[k])>>uint(bestb) != 0 {
 					// we have an exception
 					this.byteContainer.Put(byte(k))
 					this.dataToBePacked[index][this.dataPointers[index]] = int32(uint32(delta[k]) >> uint(tmpbestb))
@@ -213,7 +213,7 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 	inpos.Set(int(tmpinpos))
 	out[headerpos] = tmpoutpos - headerpos
 
-	for this.byteContainer.Position() & 3 != 0 {
+	for this.byteContainer.Position()&3 != 0 {
 		this.byteContainer.Put(0)
 	}
 
@@ -227,10 +227,10 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 	tmpoutpos += howmanyints
 
 	bitmap := int32(0)
-	for k := 1; k <=32; k++ {
+	for k := 1; k <= 32; k++ {
 		v := this.dataPointers[k]
 		if v != 0 {
-			bitmap |= (1 << uint(k - 1))
+			bitmap |= (1 << uint(k-1))
 		}
 	}
 
@@ -273,7 +273,7 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 	inexcept += 1
 
 	for k := int32(1); k < 33; k++ {
-		if bitmap & (1 << uint32(k - 1)) != 0 {
+		if bitmap&(1<<uint32(k-1)) != 0 {
 			size := in[inexcept]
 			inexcept += 1
 
@@ -335,7 +335,7 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 			}
 		}
 
-        // Calculate the original from the deltas, inlining to gain a bit of performance
+		// Calculate the original from the deltas, inlining to gain a bit of performance
 		offset := int32(initoffset.Get())
 		for i, v := range delta {
 			out[int(tmpoutpos)+i] = v + offset

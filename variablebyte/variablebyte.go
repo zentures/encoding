@@ -9,12 +9,11 @@ package variablebyte
 import (
 	"errors"
 	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/buffers"
+	"github.com/reducedb/encoding/cursor"
 )
 
 type VariableByte struct {
-
 }
 
 var _ encoding.Integer = (*VariableByte)(nil)
@@ -30,14 +29,14 @@ func (this *VariableByte) Compress(in []int32, inpos *cursor.Cursor, inlength in
 
 	//fmt.Printf("VariableByte/Compress: after inlength = %d\n", inlength)
 
-	buf := buffers.NewByteBuffer(inlength*8)
+	buf := buffers.NewByteBuffer(inlength * 8)
 	tmpinpos := inpos.Get()
 
-	for _, v := range in[tmpinpos:tmpinpos+inlength] {
+	for _, v := range in[tmpinpos : tmpinpos+inlength] {
 		val := uint32(v)
 
 		for val >= 0x80 {
-			buf.Put(byte(val)|0x80)
+			buf.Put(byte(val) | 0x80)
 			val >>= 7
 		}
 		buf.Put(byte(val))
@@ -57,7 +56,7 @@ func (this *VariableByte) Compress(in []int32, inpos *cursor.Cursor, inlength in
 		//fmt.Printf("VariableByte/Compress: error with GetUint32s - %v\n", err)
 		return err
 	}
-	outpos.Add(length/4)
+	outpos.Add(length / 4)
 	inpos.Add(inlength)
 	//fmt.Printf("VariableByte/Compress: out = %v\n", out)
 
@@ -79,7 +78,7 @@ func (this *VariableByte) Uncompress(in []int32, inpos *cursor.Cursor, inlength 
 	shift := uint(0)
 
 	for p < finalp {
-		c := in[p]>>(24 - s)
+		c := in[p] >> (24 - s)
 		s += 8
 
 		if s == 32 {
@@ -87,8 +86,8 @@ func (this *VariableByte) Uncompress(in []int32, inpos *cursor.Cursor, inlength 
 			p += 1
 		}
 
-		v += ((c & 127)<<shift)
-		if c & 128 == 0 {
+		v += ((c & 127) << shift)
+		if c&128 == 0 {
 			out[tmpoutpos] = v
 			tmpoutpos += 1
 			v = 0
@@ -103,4 +102,3 @@ func (this *VariableByte) Uncompress(in []int32, inpos *cursor.Cursor, inlength 
 
 	return nil
 }
-

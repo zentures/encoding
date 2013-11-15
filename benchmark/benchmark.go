@@ -7,35 +7,35 @@
 package main
 
 import (
-	"log"
-	"os"
-	"fmt"
 	"bufio"
-	"io/ioutil"
-	"flag"
 	"compress/gzip"
-	"strconv"
-	"strings"
-	"runtime"
+	"flag"
+	"fmt"
 	"github.com/reducedb/encoding"
 	"github.com/reducedb/encoding/benchtools"
-	"github.com/reducedb/encoding/composition"
-	"github.com/reducedb/encoding/fastpfor"
 	"github.com/reducedb/encoding/bp32"
-	"github.com/reducedb/encoding/variablebyte"
-	dfastpfor "github.com/reducedb/encoding/delta/fastpfor"
+	"github.com/reducedb/encoding/composition"
 	dbp32 "github.com/reducedb/encoding/delta/bp32"
+	dfastpfor "github.com/reducedb/encoding/delta/fastpfor"
 	dvb "github.com/reducedb/encoding/delta/variablebyte"
+	"github.com/reducedb/encoding/fastpfor"
+	"github.com/reducedb/encoding/variablebyte"
 	zbp32 "github.com/reducedb/encoding/zigzag/bp32"
 	zfastpfor "github.com/reducedb/encoding/zigzag/fastpfor"
+	"io/ioutil"
+	"log"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
 )
 
 type paramList []string
 
 var (
 	filesParam, dirsParam, codecsParam paramList
-	pprofParam bool
-	files []string
+	pprofParam                         bool
+	files                              []string
 )
 
 func (this *paramList) String() string {
@@ -58,7 +58,7 @@ func init() {
 }
 
 func scanIntegers(s *bufio.Scanner) ([]int32, error) {
-	result := make([]int32,0, 1000000)
+	result := make([]int32, 0, 1000000)
 	for s.Scan() {
 		i, err := strconv.ParseUint(s.Text(), 10, 32)
 		if err != nil {
@@ -114,7 +114,7 @@ func getDirOfFiles(path string) ([]string, error) {
 	}
 
 	for _, f := range files {
-		filenames = append(filenames, path + "/" + f.Name())
+		filenames = append(filenames, path+"/"+f.Name())
 	}
 
 	return filenames, nil
@@ -213,7 +213,7 @@ func testCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool)
 			}
 
 			if output {
-				fmt.Printf("% 20s % 20s: %5.2f %5.2f %5.2f\n", files[i], name, float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
+				fmt.Printf("% 20s % 20s: %5.2f %5.2f %5.2f\n", files[i], name, float64(len(out)*32)/float64(k), (float64(k) / (float64(dur) / 1000000000.0) / 1000000.0), (float64(k) / (float64(dur2) / 1000000000.0) / 1000000.0))
 			}
 
 			for i := 0; i < k; i++ {

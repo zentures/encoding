@@ -7,18 +7,18 @@
 package benchtools
 
 import (
-	"os"
-	"io"
 	"bytes"
-	"log"
-	"fmt"
-	"time"
+	"code.google.com/p/snappy-go/snappy"
 	"compress/gzip"
 	"compress/lzw"
-	"runtime/pprof"
-	"code.google.com/p/snappy-go/snappy"
+	"fmt"
 	"github.com/reducedb/encoding"
 	"github.com/reducedb/encoding/cursor"
+	"io"
+	"log"
+	"os"
+	"runtime/pprof"
+	"time"
 )
 
 func TestCodec(codec encoding.Integer, in []int32, sizes []int) {
@@ -38,7 +38,7 @@ func TestCodec(codec encoding.Integer, in []int32, sizes []int) {
 		}
 
 		//log.Printf("benchtools/TestCodec: %f %.2f %.2f\n", float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
-		fmt.Printf("%f %.2f %.2f\n", float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
+		fmt.Printf("%f %.2f %.2f\n", float64(len(out)*32)/float64(k), (float64(k) / (float64(dur) / 1000000000.0) / 1000000.0), (float64(k) / (float64(dur2) / 1000000000.0) / 1000000.0))
 
 		for i := 0; i < k; i++ {
 			if in[i] != out2[i] {
@@ -64,7 +64,7 @@ func PprofCodec(codec encoding.Integer, in []int32, sizes []int) {
 			log.Fatal(err2)
 		}
 
-		log.Printf("benchtools/PprofCodec: %f %.2f %.2f\n", float64(len(out)*32)/float64(k), (float64(k)/(float64(dur)/1000000000.0)/1000000.0), (float64(k)/(float64(dur2)/1000000000.0)/1000000.0))
+		log.Printf("benchtools/PprofCodec: %f %.2f %.2f\n", float64(len(out)*32)/float64(k), (float64(k) / (float64(dur) / 1000000000.0) / 1000000.0), (float64(k) / (float64(dur2) / 1000000000.0) / 1000000.0))
 
 		for i := 0; i < k; i++ {
 			if in[i] != out2[i] {
@@ -96,26 +96,26 @@ func RunCompress(codec encoding.Integer, in []int32, length int, prof bool) (dur
 	outpos := cursor.New()
 
 	now := time.Now()
-    if prof {
-        f, e := os.Create("cpu.compress.pprof")
-        if e != nil {
-            log.Fatal(e)
-        }
-        defer f.Close()
+	if prof {
+		f, e := os.Create("cpu.compress.pprof")
+		if e != nil {
+			log.Fatal(e)
+		}
+		defer f.Close()
 
-        pprof.StartCPUProfile(f)
-    }
+		pprof.StartCPUProfile(f)
+	}
 
 	if err = codec.Compress(in, inpos, len(in), out, outpos); err != nil {
 		return 0, nil, err
 	}
-    since := time.Since(now).Nanoseconds()
+	since := time.Since(now).Nanoseconds()
 
-    if prof {
-        pprof.StopCPUProfile()
-    }
+	if prof {
+		pprof.StopCPUProfile()
+	}
 
-    return since, out[:outpos.Get()], nil
+	return since, out[:outpos.Get()], nil
 }
 
 func RunUncompress(codec encoding.Integer, in []int32, length int, prof bool) (duration int64, out []int32, err error) {
@@ -123,27 +123,27 @@ func RunUncompress(codec encoding.Integer, in []int32, length int, prof bool) (d
 	inpos := cursor.New()
 	outpos := cursor.New()
 
-    if prof {
-        f, e := os.Create("cpu.uncompress.pprof")
-        if e != nil {
-            log.Fatal(e)
-        }
-        defer f.Close()
+	if prof {
+		f, e := os.Create("cpu.uncompress.pprof")
+		if e != nil {
+			log.Fatal(e)
+		}
+		defer f.Close()
 
-        pprof.StartCPUProfile(f)
-    }
+		pprof.StartCPUProfile(f)
+	}
 
 	now := time.Now()
 	if err = codec.Uncompress(in, inpos, len(in), out, outpos); err != nil {
 		return 0, nil, err
 	}
-    since := time.Since(now).Nanoseconds()
+	since := time.Since(now).Nanoseconds()
 
-    if prof {
-        pprof.StopCPUProfile()
-    }
+	if prof {
+		pprof.StopCPUProfile()
+	}
 
-    return since, out[:outpos.Get()], nil
+	return since, out[:outpos.Get()], nil
 }
 
 func RunTestGzip(data []byte) {
@@ -218,4 +218,3 @@ func RunTestSnappy(data []byte) {
 		log.Fatalf("encoding/RunTestSnappy: roundtrip mismatch\n")
 	}
 }
-

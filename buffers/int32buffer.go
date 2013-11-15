@@ -13,9 +13,9 @@
 package buffers
 
 import (
-	"fmt"
-	"errors"
 	"encoding/binary"
+	"errors"
+	"fmt"
 )
 
 type Int32Buffer struct {
@@ -165,7 +165,7 @@ func (this *Int32Buffer) Remaining() int {
 
 // HasRemaining tells whether there are any elements between the current position and the limit.
 func (this *Int32Buffer) HasRemaining() bool {
-	return this.limit - this.pos != 0
+	return this.limit-this.pos != 0
 }
 
 // IsReadOnly tells whether or not this buffer is read-only.
@@ -183,7 +183,7 @@ func (this *Int32Buffer) Get() (int32, error) {
 		return 0, errors.New("int32buffer/Get: Insufficient remaining buffer for Uint32")
 	}
 
-	result, err := this.buf.GetUint32At(this.pos*4)
+	result, err := this.buf.GetUint32At(this.pos * 4)
 	if err == nil {
 		this.pos += 1
 	}
@@ -193,11 +193,11 @@ func (this *Int32Buffer) Get() (int32, error) {
 // GetUint16At is an absolute get method for reading a int32 value.
 // Reads four bytes at the given index, composing them into a int32 value according to the current byte order.
 func (this *Int32Buffer) GetAt(index int) (int32, error) {
-	if index < 0 || index + 1 > this.limit {
+	if index < 0 || index+1 > this.limit {
 		return 0, errors.New("int32buffer/GetAt: Index must be non-negative and not larger than the buffer limit.")
 	}
 
-	result, err := this.buf.GetUint32At(index*4)
+	result, err := this.buf.GetUint32At(index * 4)
 	return int32(result), err
 }
 
@@ -217,7 +217,7 @@ func (this *Int32Buffer) GetInt32s(dst []int32, offset, length int) error {
 		return errors.New("int32buffer/GetInt32s: Offset must be non-negative and no larger than length of dst")
 	}
 
-	if length < 0 || length > cap(dst) - offset {
+	if length < 0 || length > cap(dst)-offset {
 		//fmt.Printf("int32buffer/GetInt32s: cap(dst)-offset = %d\n", cap(dst) - offset)
 		//fmt.Printf("int32buffer/GetInt32s: buf = %v\n", this.buf)
 		return errors.New("int32buffer/GetInt32s: Length must be non-negative and no larger than length of dst - offset ")
@@ -227,7 +227,7 @@ func (this *Int32Buffer) GetInt32s(dst []int32, offset, length int) error {
 		return errors.New("int32buffer/GetInt32s: Insufficient int32s to get. Length is greater than remaining bytes.")
 	}
 
-	for i := offset; i < length + offset; i++ {
+	for i := offset; i < length+offset; i++ {
 		//fmt.Printf("int32buffer/GetInt32s: i = %d\n", i)
 		res, err := this.Get()
 		if err != nil {
@@ -258,7 +258,7 @@ func (this *Int32Buffer) Put(value int32) error {
 // PutUint32At is an absolute put method for writing a int32 value
 // Writes four bytes containing the given int32 value, in the current byte order, into this buffer at the given index.
 func (this *Int32Buffer) PutAt(index int, value int32) error {
-	if index < 0 || index + 1 > this.limit {
+	if index < 0 || index+1 > this.limit {
 		return errors.New("int32buffer/PutAt: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -278,15 +278,15 @@ func (this *Int32Buffer) PutInt32s(dst []int32, offset, length int) error {
 		return fmt.Errorf("int32buffer/PutInt32s: Offset (%d) must be non-negative and no larger than length of dst", offset)
 	}
 
-	if length < 0 || length > cap(dst) - offset {
-		return fmt.Errorf("int32buffer/PutInt32s: Length (%d) must be non-negative and no larger than length of dst - offset (%d)", length, cap(dst) - offset)
+	if length < 0 || length > cap(dst)-offset {
+		return fmt.Errorf("int32buffer/PutInt32s: Length (%d) must be non-negative and no larger than length of dst - offset (%d)", length, cap(dst)-offset)
 	}
 
 	if length > this.Remaining() {
 		return fmt.Errorf("int32buffer/PutInt32s: Insufficient buffer size. Length (%d) is greater than remaining buffer (%d).", length, this.Remaining())
 	}
 
-	for i := offset; i < length + offset; i++ {
+	for i := offset; i < length+offset; i++ {
 		if err := this.Put(dst[i]); err != nil {
 			return errors.New("int32buffer/PutInt32s: " + err.Error())
 		}

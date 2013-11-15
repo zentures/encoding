@@ -31,5 +31,3 @@ func (this *Cursor) Add(i int) {
 func (this *Cursor) Increment() {
 	this.value += 1
 }
-
-

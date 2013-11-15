@@ -9,17 +9,16 @@ package bp32
 import (
 	"errors"
 	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/bitpacking"
+	"github.com/reducedb/encoding/cursor"
 )
 
 const (
 	DefaultBlockSize = 128
-	DefaultPageSize = 65536
+	DefaultPageSize  = 65536
 )
 
 type BP32 struct {
-
 }
 
 var _ encoding.Integer = (*BP32)(nil)
@@ -59,7 +58,7 @@ func (this *BP32) Compress(in []int32, inpos *cursor.Cursor, inlength int, out [
 
 		//log.Printf("zigzag_bp32/Compress: tmpoutpos = %d, s = %d\n", tmpoutpos, s)
 
-		out[tmpoutpos] = (mbits1<<24) | (mbits2<<16) | (mbits3<<8) | mbits4
+		out[tmpoutpos] = (mbits1 << 24) | (mbits2 << 16) | (mbits3 << 8) | mbits4
 		tmpoutpos += 1
 
 		//log.Printf("zigzag_bp32/Compress: mbits1 = %d, mbits2 = %d, mbits3 = %d, mbits4 = %d, s = %d\n", mbits1, mbits2, mbits3, mbits4, out[tmpoutpos-1])
@@ -109,9 +108,9 @@ func (this *BP32) Uncompress(in []int32, inpos *cursor.Cursor, inlength int, out
 	//log.Printf("zigzag_bp32/Uncompress: outlength = %d, inpos = %d, outpos = %d\n", outlength, inpos.Get(), outpos.Get())
 	for ; s < finalinpos; s += DefaultBlockSize {
 		tmp := in[tmpinpos]
-		mbits1 := tmp>>24
-		mbits2 := (tmp>>16) & 0xFF
-		mbits3 := (tmp>>8) & 0xFF
+		mbits1 := tmp >> 24
+		mbits2 := (tmp >> 16) & 0xFF
+		mbits3 := (tmp >> 8) & 0xFF
 		mbits4 := (tmp) & 0xFF
 
 		//log.Printf("zigzag_bp32/Uncopmress: mbits1 = %d, mbits2 = %d, mbits3 = %d, mbits4 = %d, s = %d\n", mbits1, mbits2, mbits3, mbits4, s)

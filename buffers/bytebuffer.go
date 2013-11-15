@@ -9,7 +9,6 @@
 //
 // The documentation for each of the methods are copied from the above page as reference.
 
-
 // A byte buffer.
 // This class defines six categories of operations upon byte buffers:
 //
@@ -52,10 +51,10 @@
 package buffers
 
 import (
-	"errors"
 	"bytes"
-	"fmt"
 	"encoding/binary"
+	"errors"
+	"fmt"
 )
 
 // A buffer is a linear, finite sequence of elements of a specific primitive type. The following invariant
@@ -110,13 +109,13 @@ func NewByteBuffer(size int) *ByteBuffer {
 
 func NewWrappedBuffer(buf []byte, size int) *ByteBuffer {
 	return &ByteBuffer{
-		buf: buf,
-		size: size,
-		pos: 0,
-		limit: size,
-		mark: -1,
+		buf:     buf,
+		size:    size,
+		pos:     0,
+		limit:   size,
+		mark:    -1,
 		wrapped: true,
-		bo: binary.BigEndian,
+		bo:      binary.BigEndian,
 	}
 }
 
@@ -240,7 +239,7 @@ func (this *ByteBuffer) Remaining() int {
 
 // HasRemaining tells whether there are any elements between the current position and the limit.
 func (this *ByteBuffer) HasRemaining() bool {
-	return this.limit - this.pos != 0
+	return this.limit-this.pos != 0
 }
 
 // IsReadOnly tells whether or not this buffer is read-only.
@@ -297,14 +296,14 @@ func (this *ByteBuffer) Copy(b *ByteBuffer) error {
 // this buffer is read-only.
 func (this *ByteBuffer) Slice() *ByteBuffer {
 	return &ByteBuffer{
-		buf: this.buf[this.pos:],
-		pos: 0,
-		size: this.size - this.pos,
-		limit: this.limit - this.pos,
-		mark: -1,
-		wrapped: this.wrapped,
+		buf:      this.buf[this.pos:],
+		pos:      0,
+		size:     this.size - this.pos,
+		limit:    this.limit - this.pos,
+		mark:     -1,
+		wrapped:  this.wrapped,
 		readOnly: this.readOnly,
-		bo: this.bo,
+		bo:       this.bo,
 	}
 }
 
@@ -318,14 +317,14 @@ func (this *ByteBuffer) Slice() *ByteBuffer {
 // this buffer is read-only.
 func (this *ByteBuffer) Duplicate() *ByteBuffer {
 	return &ByteBuffer{
-		buf: this.buf,
-		pos: this.pos,
-		size: this.size,
-		limit: this.limit,
-		mark: this.mark,
-		wrapped: this.wrapped,
+		buf:      this.buf,
+		pos:      this.pos,
+		size:     this.size,
+		limit:    this.limit,
+		mark:     this.mark,
+		wrapped:  this.wrapped,
 		readOnly: this.readOnly,
-		bo: this.bo,
+		bo:       this.bo,
 	}
 }
 
@@ -364,11 +363,11 @@ func (this *ByteBuffer) AsReadOnlyBuffer() *ByteBuffer {
 // this buffer is read-only.
 func (this *ByteBuffer) AsUint32Buffer() *Uint32Buffer {
 	return &Uint32Buffer{
-		buf: this.Slice(),
-		size: this.Remaining()/4,
-		limit: this.Remaining()/4,
-		pos: 0,
-		mark: -1,
+		buf:      this.Slice(),
+		size:     this.Remaining() / 4,
+		limit:    this.Remaining() / 4,
+		pos:      0,
+		mark:     -1,
 		readOnly: this.readOnly,
 	}
 }
@@ -385,11 +384,11 @@ func (this *ByteBuffer) AsUint32Buffer() *Uint32Buffer {
 // this buffer is read-only.
 func (this *ByteBuffer) AsInt32Buffer() *Int32Buffer {
 	return &Int32Buffer{
-		buf: this.Slice(),
-		size: this.Remaining()/4,
-		limit: this.Remaining()/4,
-		pos: 0,
-		mark: -1,
+		buf:      this.Slice(),
+		size:     this.Remaining() / 4,
+		limit:    this.Remaining() / 4,
+		pos:      0,
+		mark:     -1,
 		readOnly: this.readOnly,
 	}
 }
@@ -454,7 +453,7 @@ func (this *ByteBuffer) Put(b byte) error {
 
 // GetAt is an absolute get method. Reads the byte at the given index.
 func (this *ByteBuffer) GetAt(index int) (byte, error) {
-	if index < 0 || index + 1 > this.limit {
+	if index < 0 || index+1 > this.limit {
 		return 0, errors.New("bytebuffer/GetAt: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -467,7 +466,7 @@ func (this *ByteBuffer) PutAt(index int, b byte) error {
 		return errors.New("bytebuffer/PutAt: Byte buffer is read-only. Cannot put new byte.")
 	}
 
-	if index < 0 || index + 1 > this.limit {
+	if index < 0 || index+1 > this.limit {
 		return errors.New("bytebuffer/PutAt: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -495,7 +494,7 @@ func (this *ByteBuffer) GetBytes(dst []byte, offset, length int) error {
 		return errors.New("bytebuffer/GetBytes: Offset must be non-negative and no larger than length of dst")
 	}
 
-	if length < 0 || length > cap(dst) - offset {
+	if length < 0 || length > cap(dst)-offset {
 		return errors.New("bytebuffer/GetBytes: Length must be non-negative and no larger than length of dst - offset")
 	}
 
@@ -503,7 +502,7 @@ func (this *ByteBuffer) GetBytes(dst []byte, offset, length int) error {
 		return errors.New("bytebuffer/GetBytes: Insufficient bytes to get. Length is greater than remaining bytes.")
 	}
 
-	copy(dst[offset:], this.buf[this.pos:this.pos + length])
+	copy(dst[offset:], this.buf[this.pos:this.pos+length])
 	this.pos += length
 
 	return nil
@@ -527,7 +526,7 @@ func (this *ByteBuffer) PutFrom(src *ByteBuffer) error {
 	}
 
 	n := src.Remaining()
-	copy(this.buf[this.pos:this.pos + n], src.buf[src.pos:src.pos + n])
+	copy(this.buf[this.pos:this.pos+n], src.buf[src.pos:src.pos+n])
 	this.pos += n
 	src.pos += n
 
@@ -552,7 +551,7 @@ func (this *ByteBuffer) PutBytes(src []byte, offset, length int) error {
 		return errors.New("bytebuffer/PutBytes: Offset must be non-negative and no larger than length of src")
 	}
 
-	if length < 0 || length > cap(src) - offset {
+	if length < 0 || length > cap(src)-offset {
 		return errors.New("bytebuffer/PutBytes: Length must be non-negative and no larger than length of src - offset")
 	}
 
@@ -560,7 +559,7 @@ func (this *ByteBuffer) PutBytes(src []byte, offset, length int) error {
 		return errors.New("bytebuffer/PutBytes: Insufficient bytes to get. Length is greater than remaining bytes.")
 	}
 
-	copy(this.buf[this.pos:], src[offset:offset + length])
+	copy(this.buf[this.pos:], src[offset:offset+length])
 	this.pos += length
 	return nil
 }
@@ -581,7 +580,7 @@ func (this *ByteBuffer) GetUint16() (uint16, error) {
 // GetUint16At is an absolute get method for reading a short value.
 // Reads two bytes at the given index, composing them into a short value according to the current byte order.
 func (this *ByteBuffer) GetUint16At(index int) (uint16, error) {
-	if index < 0 || index + 2 > this.limit {
+	if index < 0 || index+2 > this.limit {
 		return 0, errors.New("bytebuffer/GetUint16At: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -613,7 +612,7 @@ func (this *ByteBuffer) PutUint16At(index int, value uint16) error {
 		return errors.New("bytebuffer/PutUint16At: Byte buffer is read-only. Cannot put new byte.")
 	}
 
-	if index < 0 || index + 2 > this.limit {
+	if index < 0 || index+2 > this.limit {
 		return errors.New("bytebuffer/PutUint16At: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -639,7 +638,7 @@ func (this *ByteBuffer) GetUint32() (uint32, error) {
 // GetUint16At is an absolute get method for reading a uint32 value.
 // Reads four bytes at the given index, composing them into a uint32 value according to the current byte order.
 func (this *ByteBuffer) GetUint32At(index int) (uint32, error) {
-	if index < 0 || index + 4 > this.limit {
+	if index < 0 || index+4 > this.limit {
 		return 0, errors.New("bytebuffer/GetUint32At: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -671,7 +670,7 @@ func (this *ByteBuffer) PutUint32At(index int, value uint32) error {
 		return errors.New("bytebuffer/PutUint32At: Byte buffer is read-only. Cannot put new byte.")
 	}
 
-	if index < 0 || index + 4 > this.limit {
+	if index < 0 || index+4 > this.limit {
 		return errors.New("bytebuffer/PutUint32At: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -695,7 +694,7 @@ func (this *ByteBuffer) GetUint64() (uint64, error) {
 // GetUint16At is an absolute get method for reading a uint64 value.
 // Reads eight bytes at the given index, composing them into a uint64 value according to the current byte order.
 func (this *ByteBuffer) GetUint64At(index int) (uint64, error) {
-	if index < 0 || index + 8 > this.limit {
+	if index < 0 || index+8 > this.limit {
 		return 0, errors.New("bytebuffer/GetUint64At: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -727,7 +726,7 @@ func (this *ByteBuffer) PutUint64At(index int, value uint64) error {
 		return errors.New("bytebuffer/PutUint64At: Byte buffer is read-only. Cannot put new byte.")
 	}
 
-	if index < 0 || index + 8 > this.limit {
+	if index < 0 || index+8 > this.limit {
 		return errors.New("bytebuffer/PutUint64At: Index must be non-negative and not larger than the buffer limit.")
 	}
 

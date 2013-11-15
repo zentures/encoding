@@ -13,10 +13,10 @@
 package buffers
 
 import (
+	"encoding/binary"
+	"errors"
 	"fmt"
 	"log"
-	"errors"
-	"encoding/binary"
 )
 
 type Uint32Buffer struct {
@@ -166,7 +166,7 @@ func (this *Uint32Buffer) Remaining() int {
 
 // HasRemaining tells whether there are any elements between the current position and the limit.
 func (this *Uint32Buffer) HasRemaining() bool {
-	return this.limit - this.pos != 0
+	return this.limit-this.pos != 0
 }
 
 // IsReadOnly tells whether or not this buffer is read-only.
@@ -194,11 +194,11 @@ func (this *Uint32Buffer) Get() (uint32, error) {
 // GetUint16At is an absolute get method for reading a uint32 value.
 // Reads four bytes at the given index, composing them into a uint32 value according to the current byte order.
 func (this *Uint32Buffer) GetAt(index int) (uint32, error) {
-	if index < 0 || index + 1 > this.limit {
+	if index < 0 || index+1 > this.limit {
 		return 0, errors.New("Uint32Buffer/GetAt: Index must be non-negative and not larger than the buffer limit.")
 	}
 
-	return this.buf.GetUint32At(index*4)
+	return this.buf.GetUint32At(index * 4)
 }
 
 // GetUint32s is a relative bulk get method.
@@ -217,7 +217,7 @@ func (this *Uint32Buffer) GetUint32s(dst []uint32, offset, length int) error {
 		return errors.New("Uint32Buffer/GetUint32s: Offset must be non-negative and no larger than length of dst")
 	}
 
-	if length < 0 || length > cap(dst) - offset {
+	if length < 0 || length > cap(dst)-offset {
 		//fmt.Printf("Uint32Buffer/GetUint32s: cap(dst)-offset = %d\n", cap(dst) - offset)
 		//fmt.Printf("Uint32Buffer/GetUint32s: buf = %v\n", this.buf)
 		return errors.New("Uint32Buffer/GetUint32s: Length must be non-negative and no larger than length of dst - offset ")
@@ -227,7 +227,7 @@ func (this *Uint32Buffer) GetUint32s(dst []uint32, offset, length int) error {
 		return errors.New("Uint32Buffer/GetUint32s: Insufficient uint32s to get. Length is greater than remaining bytes.")
 	}
 
-	for i := offset; i < length + offset; i++ {
+	for i := offset; i < length+offset; i++ {
 		var err error
 		//fmt.Printf("Uint32Buffer/GetUint32s: i = %d\n", i)
 		dst[i], err = this.Get()
@@ -258,7 +258,7 @@ func (this *Uint32Buffer) Put(value uint32) error {
 // PutUint32At is an absolute put method for writing a uint32 value
 // Writes four bytes containing the given uint32 value, in the current byte order, into this buffer at the given index.
 func (this *Uint32Buffer) PutAt(index int, value uint32) error {
-	if index < 0 || index + 1 > this.limit {
+	if index < 0 || index+1 > this.limit {
 		return errors.New("Uint32Buffer/PutAt: Index must be non-negative and not larger than the buffer limit.")
 	}
 
@@ -278,8 +278,8 @@ func (this *Uint32Buffer) PutUint32s(dst []uint32, offset, length int) error {
 		return fmt.Errorf("Uint32Buffer/PutUint32s: Offset (%d) must be non-negative and no larger than length of dst", offset)
 	}
 
-	if length < 0 || length > cap(dst) - offset {
-		return fmt.Errorf("Uint32Buffer/PutUint32s: Length (%d) must be non-negative and no larger than length of dst - offset (%d)", length, cap(dst) - offset)
+	if length < 0 || length > cap(dst)-offset {
+		return fmt.Errorf("Uint32Buffer/PutUint32s: Length (%d) must be non-negative and no larger than length of dst - offset (%d)", length, cap(dst)-offset)
 	}
 
 	if length > this.Remaining() {
@@ -287,7 +287,7 @@ func (this *Uint32Buffer) PutUint32s(dst []uint32, offset, length int) error {
 	}
 
 	log.Printf("Uint32Buffer/PutUint32s: before remaining = %d, length = %d, offset = %d, pos = %d\n", this.Remaining(), length, offset, this.pos)
-	for i := offset; i < length + offset; i++ {
+	for i := offset; i < length+offset; i++ {
 		if err := this.Put(dst[i]); err != nil {
 			return errors.New("Uint32Buffer/PutUint32s: " + err.Error())
 		}

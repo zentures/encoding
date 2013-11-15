@@ -7,10 +7,10 @@
 package variablebyte
 
 import (
-	"testing"
-	"log"
-	"github.com/reducedb/encoding/generators"
 	"github.com/reducedb/encoding/benchtools"
+	"github.com/reducedb/encoding/generators"
+	"log"
+	"testing"
 )
 
 var (
@@ -25,6 +25,6 @@ func init() {
 }
 
 func TestCodec(t *testing.T) {
-	sizes := []int{128, 128*10, 128*100, 128*1000, 128*10000}
+	sizes := []int{128, 128 * 10, 128 * 100, 128 * 1000, 128 * 10000}
 	benchtools.TestCodec(New(), data, sizes)
 }
