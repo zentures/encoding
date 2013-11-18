@@ -221,6 +221,8 @@ func testCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool)
 					return fmt.Errorf("benchmark/testCodecs: Problem recovering. index = %d, in = %d, recovered = %d, original length = %d, recovered length = %d\n", i, in[i], out2[i], k, len(out2))
 				}
 			}
+
+			runtime.GC()
 		}
 	}
 

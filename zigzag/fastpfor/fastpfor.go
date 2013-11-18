@@ -8,9 +8,9 @@ package fastpfor
 
 import (
 	"errors"
+	"github.com/reducedb/bytebuffer"
 	"github.com/reducedb/encoding"
 	"github.com/reducedb/encoding/bitpacking"
-	"github.com/reducedb/bytebuffer"
 	"github.com/reducedb/encoding/cursor"
 	"math"
 )

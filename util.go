@@ -8,7 +8,7 @@ package encoding
 
 import (
 	"fmt"
-    "math/big"
+	"math/big"
 )
 
 func FloorBy(value, factor int) int {
@@ -21,7 +21,7 @@ func CeilBy(value, factor int) int {
 
 func LeadingBitPosition(x uint32) int32 {
 	//return 32 - int32(nlz1a(x))
-    return int32(bitlen(big.Word(x)))
+	return int32(bitlen(big.Word(x)))
 }
 
 func DeltaMaxBits(initoffset int32, buf []int32) int32 {
@@ -541,6 +541,3 @@ func UnrolledLeadingBitFrequency128(in, freqs []int32) {
 	freqs[LeadingBitPosition(uint32(in[126]))]++
 	freqs[LeadingBitPosition(uint32(in[127]))]++
 }
-
-// This is defined in util_{amd64,386}.s, copied from pkg/math/big/arith_{amd64/386}.s
-func bitlen(x big.Word) (n int)

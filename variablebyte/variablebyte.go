@@ -8,8 +8,8 @@ package variablebyte
 
 import (
 	"errors"
-	"github.com/reducedb/encoding"
 	"github.com/reducedb/bytebuffer"
+	"github.com/reducedb/encoding"
 	"github.com/reducedb/encoding/cursor"
 )
 
