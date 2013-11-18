@@ -3,10 +3,6 @@
 // (gccgo) OR ((NOT amd64) AND (NOT 386) AND (NOT ARM))
 package encoding
 
-import (
-	"math/big"
-)
-
-func bitlen(x big.Word) (n int) {
+func bitlen(x uint64) (n int) {
 	return 32 - int(nlz1a(uint32(x)))
 }
