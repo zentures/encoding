@@ -9,7 +9,7 @@ package variablebyte
 import (
 	"errors"
 	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/buffers"
+	"github.com/reducedb/bytebuffer"
 	"github.com/reducedb/encoding/cursor"
 )
 
@@ -29,7 +29,7 @@ func (this *VariableByte) Compress(in []int32, inpos *cursor.Cursor, inlength in
 
 	//fmt.Printf("VariableByte/Compress: after inlength = %d\n", inlength)
 
-	buf := buffers.NewByteBuffer(inlength * 8)
+	buf := bytebuffer.NewByteBuffer(inlength * 8)
 	tmpinpos := inpos.Get()
 
 	for _, v := range in[tmpinpos : tmpinpos+inlength] {

@@ -10,7 +10,7 @@ import (
 	"errors"
 	"github.com/reducedb/encoding"
 	"github.com/reducedb/encoding/bitpacking"
-	"github.com/reducedb/encoding/buffers"
+	"github.com/reducedb/bytebuffer"
 	"github.com/reducedb/encoding/cursor"
 	"math"
 )
@@ -33,7 +33,7 @@ func init() {
 
 type FastPFOR struct {
 	dataToBePacked [33][]int32
-	byteContainer  *buffers.ByteBuffer
+	byteContainer  *bytebuffer.ByteBuffer
 	pageSize       int32
 
 	// Working area
@@ -46,7 +46,7 @@ var _ encoding.Integer = (*FastPFOR)(nil)
 func New() encoding.Integer {
 	f := &FastPFOR{
 		pageSize:      DefaultPageSize,
-		byteContainer: buffers.NewByteBuffer(3*DefaultPageSize/DefaultBlockSize + DefaultPageSize),
+		byteContainer: bytebuffer.NewByteBuffer(3*DefaultPageSize/DefaultBlockSize + DefaultPageSize),
 		dataPointers:  make([]int32, 33),
 		freqs:         make([]int32, 33),
 	}
