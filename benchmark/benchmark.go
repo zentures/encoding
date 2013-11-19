@@ -12,9 +12,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/benchtools"
 	"github.com/reducedb/encoding/bp32"
 	"github.com/reducedb/encoding/composition"
+	"github.com/reducedb/encoding/cursor"
 	dbp32 "github.com/reducedb/encoding/delta/bp32"
 	dfastpfor "github.com/reducedb/encoding/delta/fastpfor"
 	dvb "github.com/reducedb/encoding/delta/variablebyte"
@@ -26,8 +26,10 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"runtime/pprof"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type paramList []string
@@ -120,7 +122,8 @@ func getDirOfFiles(path string) ([]string, error) {
 	return filenames, nil
 }
 
-func loadIntegerFromFiles(files []string) ([][]int32, error) {
+func loadIntegerFromFiles(files []string) ([][]int32, int, error) {
+	max := 0
 	data := make([][]int32, 0, len(files))
 
 	for _, f := range files {
@@ -140,13 +143,17 @@ func loadIntegerFromFiles(files []string) ([][]int32, error) {
 		}
 
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		data = append(data, res)
+
+		if len(res) > max {
+			max = len(res)
+		}
 	}
 
-	return data, nil
+	return data, max, nil
 }
 
 func getListOfFiles() []string {
@@ -197,17 +204,74 @@ func getListOfCodecs() (map[string]encoding.Integer, error) {
 	return codecs, nil
 }
 
-func testCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool) error {
+func compress(codec encoding.Integer, in, out []int32, length int, prof bool) (duration int64, ret []int32, err error) {
+	inpos := cursor.New()
+	outpos := cursor.New()
+
+	now := time.Now()
+	if prof {
+		f, e := os.Create("cpu.compress.pprof")
+		if e != nil {
+			log.Fatal(e)
+		}
+		defer f.Close()
+
+		pprof.StartCPUProfile(f)
+	}
+
+	if err = codec.Compress(in, inpos, len(in), out, outpos); err != nil {
+		return 0, nil, err
+	}
+	since := time.Since(now).Nanoseconds()
+
+	if prof {
+		pprof.StopCPUProfile()
+	}
+
+	return since, out[:outpos.Get()], nil
+}
+
+func uncompress(codec encoding.Integer, in, out []int32, length int, prof bool) (duration int64, ret []int32, err error) {
+	inpos := cursor.New()
+	outpos := cursor.New()
+
+	if prof {
+		f, e := os.Create("cpu.uncompress.pprof")
+		if e != nil {
+			log.Fatal(e)
+		}
+		defer f.Close()
+
+		pprof.StartCPUProfile(f)
+	}
+
+	now := time.Now()
+	if err = codec.Uncompress(in, inpos, len(in), out, outpos); err != nil {
+		return 0, nil, err
+	}
+	since := time.Since(now).Nanoseconds()
+
+	if prof {
+		pprof.StopCPUProfile()
+	}
+
+	return since, out[:outpos.Get()], nil
+}
+
+func testCodecs(codecs map[string]encoding.Integer, data [][]int32, max int, output bool) error {
+	compdata := make([]int32, max+max/2)
+	decompdata := make([]int32, max)
+
 	for name, codec := range codecs {
 		for i, in := range data {
 			k := len(in)
 
-			dur, out, err := benchtools.RunCompress(codec, in, k, pprofParam)
+			dur, out, err := compress(codec, in, compdata, k, pprofParam)
 			if err != nil {
 				return err
 			}
 
-			dur2, out2, err2 := benchtools.RunUncompress(codec, out, k, pprofParam)
+			dur2, out2, err2 := uncompress(codec, out, decompdata, k, pprofParam)
 			if err2 != nil {
 				return err2
 			}
@@ -217,7 +281,7 @@ func testCodecs(codecs map[string]encoding.Integer, data [][]int32, output bool)
 			}
 
 			for i := 0; i < k; i++ {
-				if in[i] != out2[i] {
+				if in[i] != decompdata[i] {
 					return fmt.Errorf("benchmark/testCodecs: Problem recovering. index = %d, in = %d, recovered = %d, original length = %d, recovered length = %d\n", i, in[i], out2[i], k, len(out2))
 				}
 			}
@@ -238,18 +302,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	data, err := loadIntegerFromFiles(files)
+	data, max, err := loadIntegerFromFiles(files)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := testCodecs(codecs, data, false); err != nil {
+	if err := testCodecs(codecs, data, max, false); err != nil {
 		log.Fatal(err)
 	}
-	if err := testCodecs(codecs, data, false); err != nil {
+
+	if err := testCodecs(codecs, data, max, false); err != nil {
 		log.Fatal(err)
 	}
-	if err := testCodecs(codecs, data, true); err != nil {
+
+	if err := testCodecs(codecs, data, max, true); err != nil {
 		log.Fatal(err)
 	}
 }
