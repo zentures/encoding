@@ -269,11 +269,11 @@ func (this *FastPFOR) encodePage(in []int32, inpos *cursor.Cursor, thissize int,
 	return nil
 }
 
-func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, outpos *cursor.Cursor, thissize int) error {
-	//log.Printf("fastpfor/decodePage: in[%d:%d] = %v\n", inpos.Get(), inpos.Get()+thissize, in[inpos.Get():inpos.Get()+thissize])
-	//log.Printf("fastpfor/decodePage: decoding in[%d:%d], this size = %d\n", inpos.Get(), inpos.Get()+thissize, thissize)
-	//encoding.PrintInt32sInBits(in[:inpos.Get()+thissize])
+func grapByte(in []int32, index uint) byte {
+	return byte(in[index/4] >> (24 - (index%4)*8))
+}
 
+func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, outpos *cursor.Cursor, thissize int) error {
 	initpos := int32(inpos.Get())
 	wheremeta := in[initpos]
 	inpos.Increment()
@@ -281,13 +281,8 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 	inexcept := initpos + wheremeta
 	bytesize := in[inexcept]
 	inexcept += 1
-
-	//log.Printf("fastpfor/decodePage: initpos = %d, wheremeta = %d, inexcept = %d, bytesize = %d\n", initpos, wheremeta, inexcept, bytesize)
-	this.byteContainer.Clear()
-	if err := this.byteContainer.AsInt32Buffer().PutInt32s(in, int(inexcept), int(bytesize/4)); err != nil {
-		//log.Printf("fastpfor/decodePage: error with PutUint32s, %v\n", err)
-		return err
-	}
+	mybytearray := in[inexcept:]
+	mybp := uint(0)
 
 	inexcept += bytesize / 4
 	bitmap := in[inexcept]
@@ -297,12 +292,10 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 		if bitmap&(1<<uint32(k-1)) != 0 {
 			size := in[inexcept]
 			inexcept += 1
-			//log.Printf("fastpfor/decodePage: size = %d, inexcept = %d\n", size, inexcept)
 
 			if int32(len(this.dataToBePacked[k])) < size {
 				this.dataToBePacked[k] = make([]int32, encoding.CeilBy(int(size), 32))
 			}
-
 			for j := int32(0); j < size; j += 32 {
 				bitpacking.FastUnpack(in, int(inexcept), this.dataToBePacked[k], int(j), int(k))
 				inexcept += k
@@ -314,45 +307,26 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 	tmpoutpos := int32(outpos.Get())
 	tmpinpos := int32(inpos.Get())
 
-	//log.Printf("fastpfor/decodePage: inexcept = %d, tmpoutpos = %d, tmpinpos = %d\n", inexcept, tmpoutpos, tmpinpos)
-
 	run := 0
 	run_end := thissize / DefaultBlockSize
 	for run < run_end {
-		var err error
-		var bestb int32
-		if bestb, err = this.byteContainer.GetAsInt32(); err != nil {
-			return err
-		}
-
-		var cexcept int32
-		if cexcept, err = this.byteContainer.GetAsInt32(); err != nil {
-			return err
-		}
-
-		//log.Printf("fastpfor/decodePage: bestb = %d, cexcept = %d\n", bestb, cexcept)
-
-		for k := int32(0); k < 128; k += 32 {
+		bestb := int32(grapByte(mybytearray, mybp))
+		mybp++
+		cexcept := int32(grapByte(mybytearray, mybp))
+		mybp++
+                for k := int32(0); k < 128; k += 32 {
 			bitpacking.FastUnpack(in, int(tmpinpos), out, int(tmpoutpos+k), int(bestb))
 			tmpinpos += bestb
 		}
 
-		//log.Printf("fastpfor/decodePage: out[%d:%d] = %v\n", tmpoutpos, tmpoutpos+DefaultBlockSize, out[tmpoutpos:tmpoutpos+DefaultBlockSize])
-
 		if cexcept > 0 {
-			var maxbits int32
-			if maxbits, err = this.byteContainer.GetAsInt32(); err != nil {
-				return err
-			}
-
+			maxbits := int32(grapByte(mybytearray, mybp))
+			mybp++
 			index := maxbits - bestb
 
 			for k := int32(0); k < cexcept; k++ {
-				var pos int32
-				if pos, err = this.byteContainer.GetAsInt32(); err != nil {
-					return err
-				}
-
+				pos := int32(grapByte(mybytearray, mybp))
+				mybp++
 				exceptvalue := this.dataToBePacked[index][this.dataPointers[index]]
 				this.dataPointers[index] += 1
 				out[pos+tmpoutpos] |= exceptvalue << uint(bestb)
@@ -365,8 +339,6 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 
 	outpos.Set(int(tmpoutpos))
 	inpos.Set(int(inexcept))
-
-	//log.Printf("fastpfor/decodePage: returning...\n")
 
 	return nil
 }
