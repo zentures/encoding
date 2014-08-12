@@ -8,9 +8,9 @@ package fastpfor
 
 import (
 	"github.com/reducedb/encoding/benchtools"
+	"github.com/reducedb/encoding/cursor"
 	"github.com/reducedb/encoding/generators"
 	"log"
-        "github.com/reducedb/encoding/cursor"
 	"testing"
 )
 
@@ -30,7 +30,6 @@ func TestCodec(t *testing.T) {
 	benchtools.TestCodec(New(), data, sizes)
 }
 
-
 // go test -bench=Decode
 func BenchmarkDecode(b *testing.B) {
 	b.StopTimer()
@@ -42,7 +41,7 @@ func BenchmarkDecode(b *testing.B) {
 	outpos := cursor.New()
 	codec := New()
 	codec.Compress(data, inpos, len(data), compdata, outpos)
-        b.StartTimer()
+	b.StartTimer()
 	for j := 0; j < b.N; j++ {
 		newinpos := cursor.New()
 		newoutpos := cursor.New()
