@@ -9,7 +9,7 @@ package bp32
 import (
 	"github.com/reducedb/encoding/benchtools"
 	"github.com/reducedb/encoding/generators"
-        "github.com/reducedb/encoding/cursor"
+    "github.com/reducedb/encoding/cursor"
 	"log"
 	"testing"
 )
