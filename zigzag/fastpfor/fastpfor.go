@@ -8,11 +8,12 @@ package fastpfor
 
 import (
 	"errors"
-	"github.com/reducedb/bytebuffer"
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/bitpacking"
-	"github.com/reducedb/encoding/cursor"
 	"math"
+
+	"github.com/dataence/bytebuffer"
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/bitpacking"
+	"github.com/dataence/encoding/cursor"
 )
 
 const (

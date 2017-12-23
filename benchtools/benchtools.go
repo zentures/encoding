@@ -8,17 +8,18 @@ package benchtools
 
 import (
 	"bytes"
-	"code.google.com/p/snappy-go/snappy"
 	"compress/gzip"
 	"compress/lzw"
 	"fmt"
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/cursor"
 	"io"
 	"log"
 	"os"
 	"runtime/pprof"
 	"time"
+
+	"code.google.com/p/snappy-go/snappy"
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/cursor"
 )
 
 func TestCodec(codec encoding.Integer, in []int32, sizes []int) {

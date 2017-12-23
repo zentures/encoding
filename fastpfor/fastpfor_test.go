@@ -7,11 +7,12 @@
 package fastpfor
 
 import (
-	"github.com/reducedb/encoding/benchtools"
-	"github.com/reducedb/encoding/cursor"
-	"github.com/reducedb/encoding/generators"
 	"log"
 	"testing"
+
+	"github.com/dataence/encoding/benchtools"
+	"github.com/dataence/encoding/cursor"
+	"github.com/dataence/encoding/generators"
 )
 
 var (

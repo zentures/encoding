@@ -8,9 +8,10 @@ package bp32
 
 import (
 	"errors"
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/bitpacking"
-	"github.com/reducedb/encoding/cursor"
+
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/bitpacking"
+	"github.com/dataence/encoding/cursor"
 )
 
 const (

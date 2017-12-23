@@ -7,15 +7,16 @@
 package composition
 
 import (
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/benchtools"
-	"github.com/reducedb/encoding/bp32"
-	dbp32 "github.com/reducedb/encoding/delta/bp32"
-	dvb "github.com/reducedb/encoding/delta/variablebyte"
-	"github.com/reducedb/encoding/generators"
-	"github.com/reducedb/encoding/variablebyte"
 	"log"
 	"testing"
+
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/benchtools"
+	"github.com/dataence/encoding/bp32"
+	dbp32 "github.com/dataence/encoding/delta/bp32"
+	dvb "github.com/dataence/encoding/delta/variablebyte"
+	"github.com/dataence/encoding/generators"
+	"github.com/dataence/encoding/variablebyte"
 )
 
 var (

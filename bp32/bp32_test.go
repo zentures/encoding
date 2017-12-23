@@ -7,11 +7,12 @@
 package bp32
 
 import (
-	"github.com/reducedb/encoding/benchtools"
-	"github.com/reducedb/encoding/generators"
-    "github.com/reducedb/encoding/cursor"
 	"log"
 	"testing"
+
+	"github.com/dataence/encoding/benchtools"
+	"github.com/dataence/encoding/cursor"
+	"github.com/dataence/encoding/generators"
 )
 
 var (
@@ -32,19 +33,19 @@ func TestCodec(t *testing.T) {
 
 // go test -bench=Decode
 func BenchmarkDecode(b *testing.B) {
-       b.StopTimer()
-       length := 128 * 1024
-       data := generators.GenerateClustered(length, 1<<24)
-       compdata := make([]int32, 2*length)
-       recov := make([]int32, length)
-       inpos := cursor.New()
-       outpos := cursor.New()
-       codec := New()
-       codec.Compress(data, inpos, len(data), compdata, outpos)
-        b.StartTimer()
-       for j := 0; j < b.N; j++ {
-               newinpos := cursor.New()
-               newoutpos := cursor.New()
-               codec.Uncompress(compdata, newinpos, outpos.Get()-newinpos.Get(), recov, newoutpos)
-       }
+	b.StopTimer()
+	length := 128 * 1024
+	data := generators.GenerateClustered(length, 1<<24)
+	compdata := make([]int32, 2*length)
+	recov := make([]int32, length)
+	inpos := cursor.New()
+	outpos := cursor.New()
+	codec := New()
+	codec.Compress(data, inpos, len(data), compdata, outpos)
+	b.StartTimer()
+	for j := 0; j < b.N; j++ {
+		newinpos := cursor.New()
+		newoutpos := cursor.New()
+		codec.Uncompress(compdata, newinpos, outpos.Get()-newinpos.Get(), recov, newoutpos)
+	}
 }

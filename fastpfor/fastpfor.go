@@ -18,11 +18,12 @@ package fastpfor
 
 import (
 	"errors"
-	"github.com/reducedb/bytebuffer"
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/bitpacking"
-	"github.com/reducedb/encoding/cursor"
 	"math"
+
+	"github.com/dataence/bytebuffer"
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/bitpacking"
+	"github.com/dataence/encoding/cursor"
 )
 
 const (
@@ -278,15 +279,15 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 	for run < run_end {
 		bestb := uint32(grapByte(mybytearray, mybp))
 		mybp++
-		cexcept :=  int32(grapByte(mybytearray, mybp))
+		cexcept := int32(grapByte(mybytearray, mybp))
 		mybp++
 		for k := uint32(0); k < 128; k += 32 {
 			bitpacking.FastUnpack(in, int(tmpinpos), out, int(tmpoutpos+k), int(bestb))
-			tmpinpos +=  bestb
+			tmpinpos += bestb
 		}
 
 		if cexcept > 0 {
-			maxbits :=  uint32(grapByte(mybytearray, mybp))
+			maxbits := uint32(grapByte(mybytearray, mybp))
 			mybp++
 			index := maxbits - bestb
 			// assuming that the Go compiler is bad, we move everything that is indexed outside the upcoming loop
@@ -294,7 +295,7 @@ func (this *FastPFOR) decodePage(in []int32, inpos *cursor.Cursor, out []int32, 
 			myindex := this.dataPointers[index]
 
 			for k := int32(0); k < cexcept; k++ {
-				pos :=  uint32(grapByte(mybytearray, mybp))
+				pos := uint32(grapByte(mybytearray, mybp))
 				mybp++
 				exceptvalue := packedexceptions[myindex]
 				myindex++

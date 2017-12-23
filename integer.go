@@ -7,7 +7,7 @@
 package encoding
 
 import (
-	"github.com/reducedb/encoding/cursor"
+	"github.com/dataence/encoding/cursor"
 )
 
 type Integer interface {

@@ -8,9 +8,10 @@ package variablebyte
 
 import (
 	"errors"
-	"github.com/reducedb/bytebuffer"
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/cursor"
+
+	"github.com/dataence/bytebuffer"
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/cursor"
 )
 
 type VariableByte struct {

@@ -18,9 +18,10 @@ package bp32
 
 import (
 	"errors"
-	"github.com/reducedb/encoding"
-	"github.com/reducedb/encoding/bitpacking"
-	"github.com/reducedb/encoding/cursor"
+
+	"github.com/dataence/encoding"
+	"github.com/dataence/encoding/bitpacking"
+	"github.com/dataence/encoding/cursor"
 )
 
 const (
@@ -44,7 +45,6 @@ func (this *BP32) Compress(in []int32, inpos *cursor.Cursor, inlength int, out [
 		return errors.New("BP32/Compress: block size less than 128. No work done.")
 	}
 
-
 	out[outpos.Get()] = int32(inlength)
 	outpos.Increment()
 
@@ -52,7 +52,7 @@ func (this *BP32) Compress(in []int32, inpos *cursor.Cursor, inlength int, out [
 	s := inpos.Get()
 	finalinpos := s + inlength
 
-	for ; s < finalinpos; s += DefaultBlockSize  {
+	for ; s < finalinpos; s += DefaultBlockSize {
 		mbits1 := encoding.MaxBits(in[s : s+32])
 		mbits2 := encoding.MaxBits(in[s+32 : s+2*32])
 		mbits3 := encoding.MaxBits(in[s+2*32 : s+3*32])

@@ -7,10 +7,11 @@
 package variablebyte
 
 import (
-	"github.com/reducedb/encoding/benchtools"
-	"github.com/reducedb/encoding/generators"
 	"log"
 	"testing"
+
+	"github.com/dataence/encoding/benchtools"
+	"github.com/dataence/encoding/generators"
 )
 
 var (
